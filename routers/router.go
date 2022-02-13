@@ -1,9 +1,9 @@
 package routers
 
 import (
-	"designer-api/middleware"
-	"designer-api/pkg/setting"
+	"designer-api/pkg/upload"
 	"designer-api/routers/api"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,12 +13,13 @@ func InitRouter() *gin.Engine {
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	gin.SetMode(setting.RunMode)
 
+	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 	r.GET("/auth", api.GetAuth)
+	r.POST("/upload", api.UploadImage)
 
 	apiHandle := r.Group("/api")
-	apiHandle.Use(middleware.JWT())
+	//apiHandle.Use(middleware.JWT())
 	{
 		// 类别
 		apiHandle.GET("/category", api.GetCategory)

@@ -1,7 +1,9 @@
 package api
 
 import (
-	"designer-api/models"
+	"designer-api/internal/request"
+	"designer-api/internal/service"
+	"designer-api/pkg/app"
 	"designer-api/pkg/e"
 	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
@@ -14,111 +16,143 @@ import (
 
 //获取多个作品
 func GetCategory(c *gin.Context) {
-	name := c.Query("name")
+	appG := app.Gin{C: c}
+	valid := validation.Validation{}
 
-	maps := make(map[string]interface{})
-	data := make(map[string]interface{})
-
-	if name != "" {
-		maps["name"] = name
+	name := c.DefaultQuery("name", "")
+	parentId := -1
+	if arg := c.Query("parentId"); arg != "" {
+		parentId = com.StrTo(arg).MustInt()
+		valid.Min(parentId, 1, "parentId")
 	}
 
-	code := e.SUCCESS
+	if valid.HasErrors() {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
+		return
+	}
 
-	data["lists"] = models.GetCategory(util.GetPage(c), setting.PageSize, maps)
-	data["total"] = models.GetCategoryTotal(maps)
+	categoryService := service.Category{
+		CatName:  name,
+		ParentId: parentId,
+		PageNum:  util.GetPage(c),
+		PageSize: setting.AppSetting.PageSize,
+	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": data,
-	})
+	total, err := categoryService.Count()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		return
+	}
+
+	category, err := categoryService.GetAll()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["lists"] = category
+	data["total"] = total
+
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 //新增文章作品
 func AddCategory(c *gin.Context) {
-	name := c.Query("name")
-	parentId := com.StrTo(c.DefaultQuery("parentId", "0")).MustInt()
+	var (
+		appG = app.Gin{C: c}
+		form request.AddCategoryForm
+	)
 
-	valid := validation.Validation{}
-	valid.Required(name, "name").Message("名称不能为空")
-
-	code := e.INVALID_PARAMS
-	if !valid.HasErrors() {
-		if !models.ExistCategoryByName(name) {
-			code = e.SUCCESS
-			models.AddCategory(name, parentId)
-		} else {
-			code = e.ERROR_EXIST_CAT
-		}
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": make(map[string]string),
-	})
+	categoryService := service.Category{
+		CatName:  form.CatName,
+		ParentId: form.ParentId,
+	}
+
+	if err := categoryService.Add(); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 //修改文章作品
 func EditCategory(c *gin.Context) {
-	id := com.StrTo(c.Param("id")).MustInt()
-	name := c.Query("name")
+	var (
+		appG = app.Gin{C: c}
+		form = request.EditCategoryForm{CatId: com.StrTo(c.Param("id")).MustInt()}
+	)
 
-	valid := validation.Validation{}
-
-	var parentId int = 0
-	if arg := c.Query("parentId"); arg != "" {
-		parentId = com.StrTo(arg).MustInt()
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
 	}
 
-	valid.Required(id, "id").Message("ID不能为空")
-	valid.Required(name, "name").Message("名称不能为空")
-	valid.MaxSize(name, 100, "name").Message("名称最长为100字符")
-
-	code := e.INVALID_PARAMS
-	if !valid.HasErrors() {
-		code = e.SUCCESS
-		if models.ExistCategoryById(id) {
-			data := make(map[string]interface{})
-			data["cat_name"] = name
-			if parentId != 0 {
-				data["parent_id"] = parentId
-			}
-
-			models.EditCategory(id, data)
-		} else {
-			code = e.ERROR_NOT_EXIST_CAT
-		}
+	categoryService := service.Category{
+		CatId:    form.CatId,
+		CatName:  form.CatName,
+		ParentId: form.ParentId,
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": make(map[string]string),
-	})
+	exists, err := categoryService.ExistByID()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
+		return
+	}
+	if !exists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST, nil)
+		return
+	}
+
+	if err := categoryService.Edit(); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 //删除文章作品
 func DeleteCategory(c *gin.Context) {
-	id := com.StrTo(c.Param("id")).MustInt()
-
+	appG := app.Gin{C: c}
 	valid := validation.Validation{}
+	id := com.StrTo(c.Param("id")).MustInt()
 	valid.Min(id, 1, "id").Message("ID必须大于0")
 
-	code := e.INVALID_PARAMS
-	if !valid.HasErrors() {
-		code = e.SUCCESS
-		if models.ExistCategoryById(id) {
-			models.DeleteCategory(id)
-		} else {
-			code = e.ERROR_NOT_EXIST_CAT
-		}
+	if valid.HasErrors() {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusOK, e.INVALID_PARAMS, nil)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": make(map[string]string),
-	})
+	categoryService := service.Category{
+		CatId: id,
+	}
+
+	exists, err := categoryService.ExistByID()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
+		return
+	}
+	if !exists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST, nil)
+		return
+	}
+
+	err = categoryService.Delete()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }

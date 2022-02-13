@@ -1,56 +1,87 @@
 package setting
 
 import (
+	"github.com/go-ini/ini"
 	"log"
 	"time"
-
-	"github.com/go-ini/ini"
 )
 
-var (
-	Cfg          *ini.File
+type App struct {
+	AppName         string
+	AppHost         string
+	PageSize        int
+	JwtSecret       string
+	ImageSavePath   string
+	ImageMaxSize    int
+	ImageAllowExt   []string
+	RuntimeRootPath string
+}
+
+type Server struct {
 	RunMode      string
-	HTTPPort     int
+	HttpPort     int
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+}
 
-	PageSize  int
-	JwtSecret string
+type Log struct {
+	RootPath   string
+	SavePath   string
+	SaveName   string
+	FileExt    string
+	TimeFormat string
+}
+
+type Database struct {
+	Type     string
+	User     string
+	Password string
+	Host     string
+	Name     string
+	Timeout  time.Duration
+}
+
+type Redis struct {
+	Host        string
+	Password    string
+	MaxIdle     int
+	MaxActive   int
+	IdleTimeout time.Duration
+}
+
+var (
+	cfg             *ini.File
+	AppSetting      = &App{}
+	ServerSetting   = &Server{}
+	LogSetting      = &Log{}
+	DatabaseSetting = &Database{}
+	RedisSetting    = &Redis{}
 )
 
-func init() {
+// Setup 初始化配置
+func Setup() {
 	var err error
-	Cfg, err = ini.Load("config/app.ini")
+	cfg, err = ini.Load("config/app.ini")
 	if err != nil {
-		log.Fatalf("Fail to parse 'conf/app.ini': %v", err)
+		log.Fatalf("setting.Setup, fail to parse 'config/app.ini': %v", err)
 	}
 
-	LoadBase()
-	LoadServer()
-	LoadApp()
+	mapTo("app", AppSetting)
+	mapTo("server", ServerSetting)
+	mapTo("log", LogSetting)
+	mapTo("database", DatabaseSetting)
+	mapTo("redis", RedisSetting)
+
+	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
+	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
+	DatabaseSetting.Timeout = DatabaseSetting.Timeout * time.Second
+	RedisSetting.IdleTimeout = RedisSetting.IdleTimeout * time.Second
 }
 
-func LoadBase() {
-	RunMode = Cfg.Section("").Key("RUN_MODE").MustString("debug")
-}
-
-func LoadServer() {
-	sec, err := Cfg.GetSection("server")
+// 参数赋值
+func mapTo(section string, v interface{}) {
+	err := cfg.Section(section).MapTo(v)
 	if err != nil {
-		log.Fatalf("Fail to get section 'server': %v", err)
+		log.Fatalf("Cfg.MapTo %s err: %v", section, err)
 	}
-
-	HTTPPort = sec.Key("HTTP_PORT").MustInt(8000)
-	ReadTimeout = time.Duration(sec.Key("READ_TIMEOUT").MustInt(60)) * time.Second
-	WriteTimeout = time.Duration(sec.Key("WRITE_TIMEOUT").MustInt(60)) * time.Second
-}
-
-func LoadApp() {
-	sec, err := Cfg.GetSection("app")
-	if err != nil {
-		log.Fatalf("Fail to get section 'app': %v", err)
-	}
-
-	JwtSecret = sec.Key("JWT_SECRET").MustString("!@)*#)!@U#@*!@!)")
-	PageSize = sec.Key("PAGE_SIZE").MustInt(10)
 }

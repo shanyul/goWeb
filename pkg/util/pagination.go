@@ -7,12 +7,12 @@ import (
 	"github.com/unknwon/com"
 )
 
-// 获取初始页码
+// GetPage 获取初始页码
 func GetPage(c *gin.Context) int {
 	result := 0
 	page, _ := com.StrTo(c.Query("page")).Int()
 	if page > 0 {
-		result = (page - 1) * setting.PageSize
+		result = (page - 1) * setting.AppSetting.PageSize
 	}
 
 	return result

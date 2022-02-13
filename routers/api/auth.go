@@ -1,7 +1,7 @@
 package api
 
 import (
-	"designer-api/models"
+	"designer-api/internal/models"
 	"designer-api/pkg/e"
 	"designer-api/pkg/logging"
 	"designer-api/pkg/util"
