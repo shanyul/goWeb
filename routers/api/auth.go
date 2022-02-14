@@ -1,9 +1,9 @@
 package api
 
 import (
-	"designer-api/internal/models"
+	"designer-api/internal/service"
+	"designer-api/pkg/app"
 	"designer-api/pkg/e"
-	"designer-api/pkg/logging"
 	"designer-api/pkg/util"
 	"net/http"
 
@@ -16,40 +16,48 @@ type auth struct {
 	Password string `valid:"Required; MaxSize(20)"`
 }
 
-func GetAuth(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
+func Login(c *gin.Context) {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	appG := app.Gin{C: c}
 
 	valid := validation.Validation{}
 	a := auth{Username: username, Password: password}
 	ok, _ := valid.Valid(&a)
 
 	data := make(map[string]interface{})
-	code := e.INVALID_PARAMS
-	if ok {
-		isExist := models.CheckAuth(username, password)
-		if isExist {
-			token, err := util.GenerateToken(username, password)
-			if err != nil {
-				code = e.ERROR_AUTH_TOKEN
-			} else {
-				data["token"] = token
-
-				code = e.SUCCESS
-			}
-
-		} else {
-			code = e.ERROR_AUTH
-		}
-	} else {
-		for _, err := range valid.Errors {
-			logging.Info(err.Key, err.Message)
-		}
+	code := e.ERROR_LOGIN_PARAMS
+	if !ok {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusOK, code, data)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": code,
-		"msg":  e.GetMsg(code),
-		"data": data,
-	})
+	authService := service.Auth{
+		Username: username,
+		Password: password,
+	}
+	data, code = authService.CheckUser()
+
+	appG.Response(http.StatusOK, code, data)
+}
+
+func RefreshToken(c *gin.Context) {
+	token := c.GetHeader("token")
+	code := e.ERROR_TOKEN_NOT_EXIST
+	appG := app.Gin{C: c}
+	data := make(map[string]interface{})
+	if token == "" {
+		appG.Response(http.StatusOK, code, data)
+		return
+	}
+
+	newToken, err := util.RefreshToken(token)
+	if err != nil {
+		code = e.ERROR_AUTH
+		appG.Response(http.StatusOK, code, data)
+		return
+	}
+	data["token"] = newToken
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }

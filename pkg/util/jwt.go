@@ -6,21 +6,23 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+// 秘钥
 var jwtSecret []byte
 
+// TokenExpireDuration 过期时间
+const TokenExpireDuration = time.Hour * 2 //设置过期时间
+
 type Claims struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	UsesId int `json:"userId"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(username, password string) (string, error) {
+func GenerateToken(userId int) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(5 * time.Minute)
+	expireTime := nowTime.Add(TokenExpireDuration)
 
 	claims := Claims{
-		username,
-		password,
+		userId,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
 			Issuer:    "designer",
@@ -31,6 +33,15 @@ func GenerateToken(username, password string) (string, error) {
 	token, err := tokenClaims.SignedString(jwtSecret)
 
 	return token, err
+}
+
+func RefreshToken(token string) (string, error) {
+	claims, err := ParseToken(token)
+	if err != nil {
+		return "", err
+	}
+
+	return GenerateToken(claims.UsesId)
 }
 
 func ParseToken(token string) (*Claims, error) {

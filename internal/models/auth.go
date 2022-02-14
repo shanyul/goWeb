@@ -1,24 +1,24 @@
 package models
 
 type User struct {
-	UserID          int    `gorm:"primary_key" json:"user_id"`
-	Username        string `json:"username"`
-	Password        string `json:"password"`
-	Nickname        string `json:"nickname"`
-	Avatar          string `json:"avatar"`
-	BgImage         string `json:"bg_image"`
-	Phone           string `json:"phone"`
-	Email           string `json:"email"`
-	State           string `json:"state"`
-	Province        string `json:"province"`
-	City            string `json:"city"`
-	Distinct        string `json:"distinct"`
-	Address         string `json:"address"`
-	Remark          string `json:"remark"`
-	WechatOpenid    string `json:"wechat_openid"`
-	CreateTime      string `json:"create_time"`
-	UpdateTime      string `json:"update_time"`
-	DeleteTimestamp int    `json:"delete_timestamp"`
+	UserID          int    `gorm:"primary_key" column:"user_id" json:"userId"`
+	Username        string `column:"username" json:"username"`
+	Password        string `column:"password" json:"password"`
+	Nickname        string `column:"nickname" json:"nickname"`
+	Avatar          string `column:"avatar" json:"avatar"`
+	BgImage         string `column:"bg_image" json:"bgImage"`
+	Phone           string `column:"phone" json:"phone"`
+	Email           string `column:"email" json:"email"`
+	State           string `column:"state" json:"state"`
+	Province        string `column:"province" json:"province"`
+	City            string `column:"city" json:"city"`
+	Distinct        string `column:"distinct" json:"distinct"`
+	Address         string `column:"address" json:"address"`
+	Remark          string `column:"remark" json:"remark"`
+	WechatOpenid    string `column:"wechat_openid" json:"wechatOpenid"`
+	CreateTime      string `column:"create_time" json:"createTime"`
+	UpdateTime      string `column:"update_time" json:"updateTime"`
+	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 
 // TableName 自定义表名
@@ -27,9 +27,14 @@ func (User) TableName() string {
 }
 
 // CheckAuth 验证用户
-func CheckAuth(username, password string) bool {
+func CheckAuth(username, password string) (*User, bool) {
 	var auth User
-	dbHandle.Select("user_id").Where(User{Username: username, Password: password}).First(&auth)
+	err := dbHandle.Select(
+		"user_id", "username", "nickname", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
+	).Where(User{Username: username, Password: password}).First(&auth).Error
+	if err != nil {
+		return nil, false
+	}
 
-	return auth.UserID > 0
+	return &auth, auth.UserID > 0
 }

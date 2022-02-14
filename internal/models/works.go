@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -10,6 +11,7 @@ type Works struct {
 
 	WorksId          int    `gorm:"primary_key" column:"works_id" json:"worksId"`
 	UserId           int    `column:"user_id" json:"userId"`
+	UserName         string `column:"user_name" json:"userName"`
 	WorksName        string `column:"works_name" json:"worksName"`
 	WorksLink        string `column:"works_link" json:"worksLink"`
 	WorksType        string `column:"works_type" json:"worksType"`
@@ -26,9 +28,16 @@ type Works struct {
 }
 
 // GetWorks 获取作品
-func GetWorks(pageNum int, pageSize int, maps interface{}) ([]*Works, error) {
+func GetWorks(pageNum int, pageSize int, maps interface{}, orderBy string) ([]*Works, error) {
+	fmt.Println("===>", pageNum)
 	var works []*Works
-	err := dbHandle.Preload("Category").Where(maps).Find(&works).Offset(pageNum).Limit(pageSize).Error
+	var err error
+	if orderBy != "" {
+		err = dbHandle.Preload("Category").Where(maps).Order(orderBy).Limit(pageSize).Offset(pageNum).Find(&works).Error
+	} else {
+		err = dbHandle.Preload("Category").Where(maps).Limit(pageSize).Offset(pageNum).Find(&works).Error
+	}
+
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

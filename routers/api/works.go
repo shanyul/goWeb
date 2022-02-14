@@ -7,6 +7,7 @@ import (
 	"designer-api/pkg/e"
 	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
+	"fmt"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
@@ -14,33 +15,43 @@ import (
 	"github.com/unknwon/com"
 )
 
+var orderMap = map[string]string{
+	"new":      "works_id desc",
+	"favorite": "favorite_num desc",
+	"topic":    "topic_num desc",
+	"view":     "view_num desc",
+}
+
 //获取多个作品
 func GetWorks(c *gin.Context) {
+	//id := (c.MustGet("userId")).(int)
+	//userInfo := service.GetUserInfo(id)
 	appG := app.Gin{C: c}
-	valid := validation.Validation{}
-
-	name := c.DefaultQuery("name", "")
-	userId := com.StrTo(c.DefaultQuery("userId", "-1")).MustInt()
-
-	catId := -1
-	if arg := c.Query("catId"); arg != "" {
-		catId = com.StrTo(arg).MustInt()
-		valid.Min(catId, 1, "catId")
+	var (
+		orderString  string
+		worksService service.Works
+	)
+	if name := c.Query("name"); name != "" {
+		worksService.WorksName = name
 	}
 
-	if valid.HasErrors() {
-		app.MarkErrors(valid.Errors)
-		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
-		return
+	if designer := c.Query("designer"); designer != "" {
+		worksService.UserName = designer
+	}
+	if catId := c.Query("catId"); catId != "" {
+		worksService.CatId = com.StrTo(catId).MustInt()
+	}
+	orderString = ""
+	if orderBy := c.Query("orderBy"); orderBy != "" {
+		value, ok := orderMap[orderBy]
+		if ok {
+			orderString = value
+		}
 	}
 
-	worksService := service.Works{
-		WorksName: name,
-		CatId:     catId,
-		UserId:    userId,
-		PageNum:   util.GetPage(c),
-		PageSize:  setting.AppSetting.PageSize,
-	}
+	worksService.PageNum = util.GetPage(c)
+	fmt.Println("page:", worksService.PageNum)
+	worksService.PageSize = setting.AppSetting.PageSize
 
 	total, err := worksService.Count()
 	if err != nil {
@@ -48,7 +59,7 @@ func GetWorks(c *gin.Context) {
 		return
 	}
 
-	works, err := worksService.GetAll()
+	works, err := worksService.GetAll(orderString)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil)
 		return

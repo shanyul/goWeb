@@ -1,11 +1,14 @@
 package service
 
-import "designer-api/internal/models"
+import (
+	"designer-api/internal/models"
+)
 
 type Works struct {
 	WorksId          int
 	WorksName        string
 	UserId           int
+	UserName         string
 	State            int
 	CatId            int
 	WorksLink        string
@@ -65,8 +68,8 @@ func (w *Works) Edit() error {
 	return nil
 }
 
-func (w *Works) GetAll() ([]*models.Works, error) {
-	works, err := models.GetWorks(w.PageNum, w.PageSize, w.getMaps())
+func (w *Works) GetAll(orderBy string) ([]*models.Works, error) {
+	works, err := models.GetWorks(w.PageNum, w.PageSize, w.getMaps(), orderBy)
 	if err != nil {
 		return nil, err
 	}
@@ -99,16 +102,13 @@ func (w *Works) getMaps() map[string]interface{} {
 	maps := make(map[string]interface{})
 	maps["delete_timestamp"] = 0
 	maps["is_open"] = 1
-	if w.State != -1 {
-		maps["state"] = w.State
+	if w.UserName != "" {
+		maps["user_name"] = w.UserName
 	}
 	if w.WorksName != "" {
 		maps["works_name"] = w.WorksName
 	}
-	if w.UserId != -1 {
-		maps["user_id"] = w.UserId
-	}
-	if w.CatId != -1 {
+	if w.CatId > 0 {
 		maps["cat_id"] = w.CatId
 	}
 

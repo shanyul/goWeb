@@ -29,7 +29,7 @@ func GetCategory(pageNum int, pageSize int, maps interface{}) ([]Category, error
 	)
 
 	if pageSize > 0 && pageNum > 0 {
-		err = dbHandle.Where(maps).Find(&category).Offset(pageNum).Limit(pageSize).Error
+		err = dbHandle.Where(maps).Offset(pageNum).Limit(pageSize).Find(&category).Error
 	} else {
 		err = dbHandle.Where(maps).Find(&category).Error
 	}
