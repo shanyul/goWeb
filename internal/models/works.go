@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -28,9 +27,8 @@ type Works struct {
 }
 
 // GetWorks 获取作品
-func GetWorks(pageNum int, pageSize int, maps interface{}, orderBy string) ([]*Works, error) {
-	fmt.Println("===>", pageNum)
-	var works []*Works
+func GetWorks(pageNum int, pageSize int, maps interface{}, orderBy string) ([]Works, error) {
+	var works []Works
 	var err error
 	if orderBy != "" {
 		err = dbHandle.Preload("Category").Where(maps).Order(orderBy).Limit(pageSize).Offset(pageNum).Find(&works).Error

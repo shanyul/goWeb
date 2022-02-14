@@ -7,7 +7,6 @@ import (
 	"designer-api/pkg/e"
 	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
-	"fmt"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
@@ -50,7 +49,6 @@ func GetWorks(c *gin.Context) {
 	}
 
 	worksService.PageNum = util.GetPage(c)
-	fmt.Println("page:", worksService.PageNum)
 	worksService.PageSize = setting.AppSetting.PageSize
 
 	total, err := worksService.Count()
