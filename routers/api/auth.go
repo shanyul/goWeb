@@ -2,6 +2,7 @@ package api
 
 import (
 	"designer-api/internal/models"
+	"designer-api/internal/request"
 	"designer-api/internal/service"
 	"designer-api/pkg/app"
 	"designer-api/pkg/e"
@@ -119,4 +120,42 @@ func RefreshToken(c *gin.Context) {
 	}
 	data["token"] = newToken
 	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+// 修改文章作品
+func EditUser(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form = request.EditUserForm{}
+	)
+
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+
+	// 获取用户信息
+	id := (c.MustGet("userId")).(int)
+	userData := service.GetUserInfo(id)
+
+	userService := service.UserInfo{
+		UserId:   userData.UserId,
+		Username: form.Username,
+		Nickname: form.Nickname,
+		Avatar:   form.Avatar,
+		BgImage:  form.BgImage,
+		Province: form.Province,
+		City:     form.City,
+		Distinct: form.Distinct,
+		Remark:   form.Remark,
+	}
+
+	err := userService.Edit()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }

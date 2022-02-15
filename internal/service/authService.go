@@ -30,6 +30,7 @@ type UserInfo struct {
 	City       string
 	Distinct   string
 	Address    string
+	Remark     string
 	CreateTime string
 	Token      string
 }
@@ -108,4 +109,23 @@ func (a *Auth) CheckUser() (info map[string]interface{}, code int) {
 	}
 
 	return
+}
+
+func (u *UserInfo) Edit() error {
+	user := map[string]interface{}{
+		"username": u.Username,
+		"nickname": u.Nickname,
+		"avatar":   u.Avatar,
+		"bg_image": u.BgImage,
+		"province": u.Province,
+		"city":     u.City,
+		"distinct": u.Distinct,
+		"remark":   u.Remark,
+	}
+
+	if err := models.EditUser(u.UserId, user); err != nil {
+		return err
+	}
+
+	return nil
 }

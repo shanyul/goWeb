@@ -18,6 +18,7 @@ func InitRouter() *gin.Engine {
 	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 	r.POST("/auth/login", api.Login)
 	r.POST("/auth/register", api.Register)
+	r.PUT("/auth/edit", middleware.JWT(), api.EditUser)
 	r.GET("/refresh-token", middleware.JWT(), api.RefreshToken)
 	r.POST("/upload", middleware.JWT(), api.UploadImage)
 

@@ -83,3 +83,11 @@ func AddUser(data map[string]interface{}) error {
 
 	return nil
 }
+
+func EditUser(id int, data interface{}) error {
+	if err := dbHandle.Model(&User{}).Where("user_id = ?", id).Updates(data).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
