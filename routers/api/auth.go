@@ -122,7 +122,7 @@ func RefreshToken(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
-// 修改文章作品
+// 修改用户信息
 func EditUser(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
