@@ -2,12 +2,13 @@ package models
 
 import (
 	"gorm.io/gorm"
+	"time"
 )
 
 type Topic struct {
 	TopicId         int    `gorm:"primary_key" column:"topic_id" json:"topicId"`
 	UserId          int    `column:"user_id" json:"userId"`
-	UserName        string `column:"user_name" json:"userName"`
+	Username        string `column:"username" json:"username"`
 	WorksId         int    `column:"works_id" json:"worksId"`
 	Content         string `column:"content" json:"content"`
 	RelationId      int    `column:"relation_id" json:"relationId"`
@@ -20,7 +21,7 @@ func (Topic) TableName() string {
 	return "topic"
 }
 
-// 获取作品
+// 获取评论
 func GetTopic(pageNum int, pageSize int, maps interface{}) ([]Topic, error) {
 	var (
 		topic []Topic
@@ -43,7 +44,7 @@ func GetTopic(pageNum int, pageSize int, maps interface{}) ([]Topic, error) {
 func AddTopic(data map[string]interface{}) error {
 	topic := Topic{
 		UserId:     data["userId"].(int),
-		UserName:   data["userName"].(string),
+		Username:   data["username"].(string),
 		WorksId:    data["worksId"].(int),
 		Content:    data["content"].(string),
 		RelationId: data["relationId"].(int),
@@ -51,7 +52,7 @@ func AddTopic(data map[string]interface{}) error {
 
 	if err := dbHandle.Select(
 		"UserId",
-		"UserName",
+		"Username",
 		"WorksId",
 		"Content",
 		"RelationId",
@@ -62,8 +63,29 @@ func AddTopic(data map[string]interface{}) error {
 	return nil
 }
 
-func DeleteTopic(id int) error {
-	if err := dbHandle.Where("topic_id = ?", id).Delete(Topic{}).Error; err != nil {
+// 获取总记录数
+func GetTopicTotal(maps interface{}) (int64, error) {
+	var count int64
+	if err := dbHandle.Model(&Topic{}).Where(maps).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func GetOneTopic(id int) (*Topic, error) {
+	var topic Topic
+	if err := dbHandle.Where("topic_id = ?", id).First(&topic).Error; err != nil {
+		return nil, err
+	}
+
+	return &topic, nil
+}
+
+func DeleteTopic(id int, userId int) error {
+	maps := make(map[string]interface{})
+	maps["delete_timestamp"] = time.Now().Unix()
+	if err := dbHandle.Model(&Topic{}).Select("delete_timestamp").Where("topic_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {
 		return err
 	}
 

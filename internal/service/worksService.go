@@ -8,7 +8,7 @@ type Works struct {
 	WorksId          int
 	WorksName        string
 	UserId           int
-	UserName         string
+	Username         string
 	State            int
 	CatId            int
 	WorksLink        string
@@ -35,6 +35,7 @@ func (w *Works) Add() error {
 	works := map[string]interface{}{
 		"worksName":        w.WorksName,
 		"userId":           w.UserId,
+		"username":         w.Username,
 		"state":            w.State,
 		"catId":            w.CatId,
 		"worksLink":        w.WorksLink,
@@ -68,7 +69,7 @@ func (w *Works) Edit() error {
 	return nil
 }
 
-func (w *Works) GetAll(orderBy string) ([]*models.Works, error) {
+func (w *Works) GetAll(orderBy string) ([]models.Works, error) {
 	works, err := models.GetWorks(w.PageNum, w.PageSize, w.getMaps(), orderBy)
 	if err != nil {
 		return nil, err
@@ -87,7 +88,7 @@ func (w *Works) Get() (*models.Works, error) {
 }
 
 func (w *Works) Delete() error {
-	return models.DeleteWorks(w.WorksId)
+	return models.DeleteWorks(w.WorksId, w.UserId)
 }
 
 func (w *Works) ExistByID() (bool, error) {
@@ -98,12 +99,20 @@ func (w *Works) Count() (int64, error) {
 	return models.GetWorksTotal(w.getMaps())
 }
 
+func (w *Works) Increment(field string) error {
+	return models.Increment(w.WorksId, field)
+}
+
+func (w *Works) Decrement(field string) error {
+	return models.Decrement(w.WorksId, field)
+}
+
 func (w *Works) getMaps() map[string]interface{} {
 	maps := make(map[string]interface{})
 	maps["delete_timestamp"] = 0
 	maps["is_open"] = 1
-	if w.UserName != "" {
-		maps["user_name"] = w.UserName
+	if w.Username != "" {
+		maps["username"] = w.Username
 	}
 	if w.WorksName != "" {
 		maps["works_name"] = w.WorksName

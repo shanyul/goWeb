@@ -30,6 +30,10 @@ const (
 	ERROR_AUTH_TOKEN               = 20003
 	ERROR_AUTH                     = 20004
 	ERROR_TOKEN_NOT_EXIST          = 20005
+	ERROR_USER_NICKNAME_EXIST      = 20006
+	ERROR_CONFIRM_PASSWORD_NOT_EQ  = 20007
+	ERROR_REGISTER_FAIL            = 20008
+	ERROR_GENERATE_PASSWORD        = 20009
 
 	ERROR_UPLOAD_SAVE_IMAGE_FAIL    = 30001
 	ERROR_UPLOAD_CHECK_IMAGE_FAIL   = 30002
@@ -64,6 +68,10 @@ var MsgFlags = map[int]string{
 	ERROR_GET_WORKS_FAIL:            "获取作品失败",
 	ERROR_CHECK_EXIST_WORKS_FAIL:    "作品不存在",
 	ERROR_DELETE_WORKS_FAIL:         "作品删除失败",
+	ERROR_USER_NICKNAME_EXIST:       "昵称已存在",
+	ERROR_CONFIRM_PASSWORD_NOT_EQ:   "确认密码错误",
+	ERROR_REGISTER_FAIL:             "注册失败",
+	ERROR_GENERATE_PASSWORD:         "生成密码失败，请重试",
 }
 
 func GetMsg(code int) string {

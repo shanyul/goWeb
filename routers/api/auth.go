@@ -1,28 +1,37 @@
 package api
 
 import (
+	"designer-api/internal/models"
 	"designer-api/internal/service"
 	"designer-api/pkg/app"
 	"designer-api/pkg/e"
 	"designer-api/pkg/util"
-	"net/http"
-
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"strings"
 )
 
 type auth struct {
-	Username string `valid:"Required; MaxSize(50)"`
+	Username        string `valid:"Required; MaxSize(20)"`
+	Nickname        string `valid:"Required; AlphaNumeric; MaxSize(20)"`
+	Password        string `valid:"Required; MaxSize(20)"`
+	ConfirmPassword string `valid:"Required; MaxSize(20)"`
+}
+
+type LoginAuth struct {
+	Nickname string `valid:"Required; AlphaNumeric; MaxSize(20)"`
 	Password string `valid:"Required; MaxSize(20)"`
 }
 
 func Login(c *gin.Context) {
-	username := c.PostForm("username")
+	nickname := c.PostForm("nickname")
 	password := c.PostForm("password")
 	appG := app.Gin{C: c}
 
 	valid := validation.Validation{}
-	a := auth{Username: username, Password: password}
+	a := LoginAuth{Nickname: nickname, Password: password}
 	ok, _ := valid.Valid(&a)
 
 	data := make(map[string]interface{})
@@ -34,12 +43,62 @@ func Login(c *gin.Context) {
 	}
 
 	authService := service.Auth{
-		Username: username,
+		Nickname: nickname,
 		Password: password,
 	}
 	data, code = authService.CheckUser()
 
 	appG.Response(http.StatusOK, code, data)
+}
+
+func Register(c *gin.Context) {
+	username := c.PostForm("username")
+	nickname := c.PostForm("nickname")
+	password := c.PostForm("password")
+	confirmPassword := c.PostForm("confirmPassword")
+	appG := app.Gin{C: c}
+
+	valid := validation.Validation{}
+	a := auth{Username: username, Nickname: nickname, Password: password, ConfirmPassword: confirmPassword}
+	ok, _ := valid.Valid(&a)
+
+	data := make(map[string]interface{})
+	code := e.INVALID_PARAMS
+	if !ok {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusOK, code, data)
+		return
+	}
+	if strings.Compare(a.Password, a.ConfirmPassword) != 0 {
+		code = e.ERROR_CONFIRM_PASSWORD_NOT_EQ
+		appG.Response(http.StatusOK, code, data)
+		return
+	}
+	if exist, _ := models.ExistNickname(a.Nickname); exist {
+		code = e.ERROR_USER_NICKNAME_EXIST
+		appG.Response(http.StatusOK, code, data)
+		return
+	}
+
+	hashPwd, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+	if err != nil {
+		code = e.ERROR_GENERATE_PASSWORD
+		appG.Response(http.StatusOK, code, data)
+		return
+	}
+
+	authService := service.Auth{
+		Username: username,
+		Nickname: nickname,
+		Password: string(hashPwd),
+	}
+	if err := authService.AddUser(); err != nil {
+		code = e.ERROR_REGISTER_FAIL
+		appG.Response(http.StatusOK, code, data)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 func RefreshToken(c *gin.Context) {

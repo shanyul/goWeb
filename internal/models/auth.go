@@ -1,5 +1,7 @@
 package models
 
+import "gorm.io/gorm"
+
 type User struct {
 	UserID          int    `gorm:"primary_key" column:"user_id" json:"userId"`
 	Username        string `column:"username" json:"username"`
@@ -37,4 +39,47 @@ func CheckAuth(username, password string) (*User, bool) {
 	}
 
 	return &auth, auth.UserID > 0
+}
+
+// 判断昵称是否存在
+func ExistNickname(name string) (bool, error) {
+	var user User
+	err := dbHandle.Select("user_id").Where("nickname = ?", name).First(&user).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, err
+	}
+
+	return user.UserID > 0, nil
+}
+
+// 判断昵称是否存在
+func GetByNickname(name string) (*User, error) {
+	var user User
+	err := dbHandle.Select(
+		"user_id", "username", "nickname", "password", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
+	).Where("nickname = ?", name).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// AddUser 验证用户
+func AddUser(data map[string]interface{}) error {
+	user := User{
+		Username: data["username"].(string),
+		Password: data["password"].(string),
+		Nickname: data["nickname"].(string),
+	}
+
+	if err := dbHandle.Select(
+		"username",
+		"password",
+		"nickname",
+	).Create(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

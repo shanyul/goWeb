@@ -7,11 +7,14 @@ import (
 	"designer-api/pkg/util"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Auth struct {
-	Username string
-	Password string
+	Username        string
+	Nickname        string
+	Password        string
+	ConfirmPassword string
 }
 
 type UserInfo struct {
@@ -42,12 +45,38 @@ func GetUserInfo(id int) UserInfo {
 	return userInfo
 }
 
+func (a *Auth) ExistByName() (bool, error) {
+	return models.ExistNickname(a.Nickname)
+}
+
+func (a *Auth) AddUser() error {
+	category := map[string]interface{}{
+		"username": a.Username,
+		"nickname": a.Nickname,
+		"password": a.Password,
+	}
+
+	if err := models.AddUser(category); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (a *Auth) CheckUser() (info map[string]interface{}, code int) {
-	authInfo, result := models.CheckAuth(a.Username, a.Password)
+	authInfo, err := models.GetByNickname(a.Nickname)
 	code = e.SUCCESS
-	if !result {
+	if err != nil {
 		code = e.ERROR_LOGIN_PARAMS
-		return info, code
+		return
+	}
+	// 验证密码是否正确
+	fmt.Println(authInfo.Password, a.Password)
+	err = bcrypt.CompareHashAndPassword([]byte(authInfo.Password), []byte(a.Password))
+	fmt.Println("errrr", err)
+	if err != nil {
+		code = e.ERROR_LOGIN_PARAMS
+		return
 	}
 
 	token, err := util.GenerateToken(authInfo.UserID)
@@ -73,10 +102,10 @@ func (a *Auth) CheckUser() (info map[string]interface{}, code int) {
 		// 保存用户信息
 		key := fmt.Sprintf("%s:%d", prefixLoginKey, authInfo.UserID)
 		ttl := 60 * 60 * 24
-		gredis.Set(key, info, ttl)
+		_ = gredis.Set(key, info, ttl)
 
 		code = e.SUCCESS
 	}
 
-	return info, code
+	return
 }

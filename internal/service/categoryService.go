@@ -57,7 +57,7 @@ func (cat *Category) GetAll() ([]models.Category, error) {
 }
 
 func (cat *Category) Delete() error {
-	return models.DeleteWorks(cat.CatId)
+	return models.DeleteCategory(cat.CatId)
 }
 
 func (cat *Category) ExistByID() (bool, error) {

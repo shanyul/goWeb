@@ -17,6 +17,7 @@ func InitRouter() *gin.Engine {
 
 	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 	r.POST("/auth/login", api.Login)
+	r.POST("/auth/register", api.Register)
 	r.GET("/refresh-token", middleware.JWT(), api.RefreshToken)
 	r.POST("/upload", middleware.JWT(), api.UploadImage)
 
@@ -34,6 +35,14 @@ func InitRouter() *gin.Engine {
 		apiHandle.POST("/works", api.AddWorks)
 		apiHandle.PUT("/works/:id", api.EditWorks)
 		apiHandle.DELETE("/works/:id", api.DeleteWorks)
+		// 评论
+		apiHandle.GET("/topic", api.GetTopics)
+		apiHandle.POST("/topic", api.AddTopic)
+		apiHandle.DELETE("/topic/:id", api.DeleteTopic)
+		// 关注
+		apiHandle.GET("/favorite", api.GetFavorite)
+		apiHandle.POST("/favorite", api.AddFavorite)
+		apiHandle.DELETE("/favorite/:id", api.DeleteFavorite)
 	}
 
 	return r

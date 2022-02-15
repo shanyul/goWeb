@@ -23,8 +23,6 @@ var orderMap = map[string]string{
 
 //获取多个作品
 func GetWorks(c *gin.Context) {
-	//id := (c.MustGet("userId")).(int)
-	//userInfo := service.GetUserInfo(id)
 	appG := app.Gin{C: c}
 	var (
 		orderString  string
@@ -35,7 +33,7 @@ func GetWorks(c *gin.Context) {
 	}
 
 	if designer := c.Query("designer"); designer != "" {
-		worksService.UserName = designer
+		worksService.Username = designer
 	}
 	if catId := c.Query("catId"); catId != "" {
 		worksService.CatId = com.StrTo(catId).MustInt()
@@ -103,6 +101,16 @@ func GetOneWorks(c *gin.Context) {
 		return
 	}
 
+	// 获取用户信息
+	userId := (c.MustGet("userId")).(int)
+	userInfo := service.GetUserInfo(userId)
+	// 更新查看数
+	viewService := service.Viewer{
+		UserId:  userInfo.UserId,
+		WorksId: id,
+	}
+	_ = viewService.Add()
+
 	appG.Response(http.StatusOK, e.SUCCESS, works)
 }
 
@@ -118,10 +126,14 @@ func AddWorks(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
+	// 获取用户信息
+	id := (c.MustGet("userId")).(int)
+	userInfo := service.GetUserInfo(id)
 
 	worksService := service.Works{
 		WorksName:        form.WorksName,
 		UserId:           form.UserId,
+		Username:         userInfo.Username,
 		State:            form.State,
 		CatId:            form.CatId,
 		WorksLink:        form.WorksLink,
@@ -193,8 +205,13 @@ func DeleteWorks(c *gin.Context) {
 		return
 	}
 
+	// 获取用户信息
+	userId := (c.MustGet("userId")).(int)
+	userInfo := service.GetUserInfo(userId)
+
 	worksService := service.Works{
 		WorksId: id,
+		UserId:  userInfo.UserId,
 	}
 
 	exists, err := worksService.ExistByID()

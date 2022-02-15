@@ -1,7 +1,9 @@
 package models
 
 import (
+	"fmt"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Works struct {
@@ -10,7 +12,7 @@ type Works struct {
 
 	WorksId          int    `gorm:"primary_key" column:"works_id" json:"worksId"`
 	UserId           int    `column:"user_id" json:"userId"`
-	UserName         string `column:"user_name" json:"userName"`
+	Username         string `column:"username" json:"username"`
 	WorksName        string `column:"works_name" json:"worksName"`
 	WorksLink        string `column:"works_link" json:"worksLink"`
 	WorksType        string `column:"works_type" json:"worksType"`
@@ -65,6 +67,22 @@ func GetWorksTotal(maps interface{}) (int64, error) {
 	return count, nil
 }
 
+func Increment(id int, field string) error {
+	opString := fmt.Sprintf("%s + ?", field)
+	if err := dbHandle.Model(&Works{}).Where("works_id = ?", id).UpdateColumn(field, gorm.Expr(opString, 1)).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func Decrement(id int, field string) error {
+	opString := fmt.Sprintf("%s - ?", field)
+	if err := dbHandle.Model(&Works{}).Where(field+" > 0 AND works_id = ?", id).UpdateColumn(field, gorm.Expr(opString, 1)).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // ExistWorksByName 通过名称判断是否存在
 func ExistWorksByName(name string) (bool, error) {
 	var works Works
@@ -92,6 +110,7 @@ func AddWorks(data map[string]interface{}) error {
 		CatId:            data["catId"].(int),
 		WorksName:        data["worksName"].(string),
 		UserId:           data["userId"].(int),
+		Username:         data["username"].(string),
 		State:            data["state"].(int),
 		WorksLink:        data["worksLink"].(string),
 		WorksType:        data["worksType"].(string),
@@ -108,8 +127,10 @@ func AddWorks(data map[string]interface{}) error {
 	return nil
 }
 
-func DeleteWorks(id int) error {
-	if err := dbHandle.Where("works_id = ?", id).Delete(Works{}).Error; err != nil {
+func DeleteWorks(id int, userId int) error {
+	maps := make(map[string]interface{})
+	maps["delete_timestamp"] = time.Now().Unix()
+	if err := dbHandle.Model(&Works{}).Select("delete_timestamp").Where("works_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {
 		return err
 	}
 
