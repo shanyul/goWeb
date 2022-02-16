@@ -14,28 +14,32 @@ import (
 	"github.com/unknwon/com"
 )
 
+type TopicApi struct {
+	topicService service.TopicService
+	userService  service.UserService
+}
+
 // 获取多个评论
-func GetTopics(c *gin.Context) {
+func (api *TopicApi) GetTopics(c *gin.Context) {
 	appG := app.Gin{C: c}
-	var topicService service.Topic
+	var topicData service.Topic
 
 	if worksId := c.Query("worksId"); worksId != "" {
-		topicService.WorksId = com.StrTo(worksId).MustInt()
+		topicData.WorksId = com.StrTo(worksId).MustInt()
 	}
 	if userId := c.Query("userId"); userId != "" {
-		topicService.UserId = com.StrTo(userId).MustInt()
+		topicData.UserId = com.StrTo(userId).MustInt()
 	}
 
-	topicService.PageNum = util.GetPage(c)
-	topicService.PageSize = setting.AppSetting.PageSize
-
-	total, err := topicService.Count()
+	total, err := api.topicService.Count(&topicData)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
 		return
 	}
+	topicData.PageNum = util.GetPage(c)
+	topicData.PageSize = setting.AppSetting.PageSize
 
-	topic, err := topicService.GetAll()
+	topic, err := api.topicService.GetAll(&topicData)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
 		return
@@ -49,11 +53,11 @@ func GetTopics(c *gin.Context) {
 }
 
 // AddTopic 新增文章作品
-func AddTopic(c *gin.Context) {
+func (api *TopicApi) AddTopic(c *gin.Context) {
 	var (
-		appG         = app.Gin{C: c}
-		form         request.AddTopicForm
-		topicService service.Topic
+		appG      = app.Gin{C: c}
+		form      request.AddTopicForm
+		topicData service.Topic
 	)
 
 	httpCode, errCode := app.BindAndValid(c, &form)
@@ -63,19 +67,19 @@ func AddTopic(c *gin.Context) {
 	}
 
 	if relationId := c.DefaultPostForm("relationId", "0"); relationId != "" {
-		topicService.RelationId = com.StrTo(relationId).MustInt()
+		topicData.RelationId = com.StrTo(relationId).MustInt()
 	}
 
 	// 获取用户信息
 	id := (c.MustGet("userId")).(int)
-	userInfo := service.GetUserInfo(id)
+	userInfo := api.userService.GetUserInfo(id)
 
-	topicService.WorksId = form.WorksId
-	topicService.Content = form.Content
-	topicService.UserId = userInfo.UserId
-	topicService.Username = userInfo.Username
+	topicData.WorksId = form.WorksId
+	topicData.Content = form.Content
+	topicData.UserId = userInfo.UserId
+	topicData.Username = userInfo.Username
 
-	if err := topicService.Add(); err != nil {
+	if err := api.topicService.Add(&topicData); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
 		return
 	}
@@ -84,7 +88,7 @@ func AddTopic(c *gin.Context) {
 }
 
 // 删除评论
-func DeleteTopic(c *gin.Context) {
+func (api *TopicApi) DeleteTopic(c *gin.Context) {
 	appG := app.Gin{C: c}
 	valid := validation.Validation{}
 	id := com.StrTo(c.Param("id")).MustInt()
@@ -95,17 +99,10 @@ func DeleteTopic(c *gin.Context) {
 		appG.Response(http.StatusOK, e.INVALID_PARAMS, nil)
 		return
 	}
-
 	// 获取用户信息
 	userId := (c.MustGet("userId")).(int)
-	userInfo := service.GetUserInfo(userId)
 
-	topicService := service.Topic{
-		TopicId: id,
-		UserId:  userInfo.UserId,
-	}
-
-	if err := topicService.Delete(); err != nil {
+	if err := api.topicService.Delete(id, userId); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
 		return
 	}

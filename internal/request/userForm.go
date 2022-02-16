@@ -9,5 +9,18 @@ type EditUserForm struct {
 	Province string `form:"province"`
 	City     string `form:"city"`
 	Distinct string `form:"distinct"`
+	Address  string `form:"address"`
 	Remark   string `form:"remark"`
+}
+
+type LoginUserForm struct {
+	Nickname string `form:"nickname" valid:"Required; AlphaDash; MaxSize(20)"`
+	Password string `form:"password" valid:"Required; MaxSize(20)"`
+}
+
+type RegisterUserForm struct {
+	Username        string `form:"username" valid:"Required; MaxSize(20)"`
+	Nickname        string `form:"nickname" valid:"Required; AlphaDash; MaxSize(20)"`
+	Password        string `form:"password" valid:"Required; MaxSize(20)"`
+	ConfirmPassword string `form:"confirmPassword" valid:"Required; MaxSize(20)"`
 }

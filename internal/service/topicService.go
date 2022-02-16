@@ -3,44 +3,37 @@ package service
 import "designer-api/internal/models"
 
 type Topic struct {
-	TopicId         int
-	UserId          int
-	Username        string
-	WorksId         int
-	Content         string
-	RelationId      int
-	CreateTime      string
-	DeleteTimestamp int
+	models.Topic
 
 	PageNum  int
 	PageSize int
 }
 
-func (topic *Topic) Add() error {
-	topicData := map[string]interface{}{
-		"userId":     topic.UserId,
-		"username":   topic.Username,
-		"worksId":    topic.WorksId,
-		"content":    topic.Content,
-		"relationId": topic.RelationId,
-	}
+type TopicService struct {
+	TopicModel   models.TopicModel
+	WorksService WorksService
+}
 
-	if err := models.AddTopic(topicData); err != nil {
+func (service *TopicService) Add(topic *Topic) error {
+	topicData := models.Topic{}
+	topicData.UserId = topic.UserId
+	topicData.Username = topic.Username
+	topicData.WorksId = topic.WorksId
+	topicData.Content = topic.Content
+	topicData.RelationId = topic.RelationId
+
+	if err := service.TopicModel.AddTopic(&topicData); err != nil {
 		return err
 	}
 
-	worksService := Works{
-		WorksId: topic.WorksId,
-	}
-
 	field := "topic_num"
-	_ = worksService.Increment(field)
+	_ = service.WorksService.Increment(topic.WorksId, field)
 
 	return nil
 }
 
-func (topic *Topic) GetAll() ([]models.Topic, error) {
-	data, err := models.GetTopic(topic.PageNum, topic.PageSize, topic.getMaps())
+func (service *TopicService) GetAll(topic *Topic) ([]models.Topic, error) {
+	data, err := service.TopicModel.GetTopic(topic.PageNum, topic.PageSize, service.getMaps(topic))
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +41,8 @@ func (topic *Topic) GetAll() ([]models.Topic, error) {
 	return data, nil
 }
 
-func (topic *Topic) Get() (*models.Topic, error) {
-	data, err := models.GetOneTopic(topic.TopicId)
+func (service *TopicService) Get(id int) (*models.Topic, error) {
+	data, err := service.TopicModel.GetOneTopic(id)
 	if err != nil {
 		return nil, err
 	}
@@ -57,33 +50,30 @@ func (topic *Topic) Get() (*models.Topic, error) {
 	return data, nil
 }
 
-func (topic *Topic) Delete() error {
-	topicData, err := topic.Get()
+func (service *TopicService) Delete(topicId int, userId int) error {
+	topicData, err := service.Get(topicId)
 	if err != nil {
 		return err
 	}
 
 	if topicData.DeleteTimestamp == 0 {
-		if err := models.DeleteTopic(topic.TopicId, topic.UserId); err != nil {
+		if err := service.TopicModel.DeleteTopic(topicId, userId); err != nil {
 			return err
 		}
 
 		// 扣减评论数
-		worksService := Works{
-			WorksId: topicData.WorksId,
-		}
 		field := "topic_num"
-		_ = worksService.Decrement(field)
+		_ = service.WorksService.Decrement(topicData.WorksId, field)
 	}
 
 	return nil
 }
 
-func (topic *Topic) Count() (int64, error) {
-	return models.GetTopicTotal(topic.getMaps())
+func (service *TopicService) Count(topic *Topic) (int64, error) {
+	return service.TopicModel.GetTopicTotal(service.getMaps(topic))
 }
 
-func (topic *Topic) getMaps() map[string]interface{} {
+func (service *TopicService) getMaps(topic *Topic) map[string]interface{} {
 	maps := make(map[string]interface{})
 	maps["delete_timestamp"] = 0
 	if topic.WorksId > 0 {

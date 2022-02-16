@@ -4,6 +4,8 @@ import (
 	"gorm.io/gorm"
 )
 
+type ViewerModel struct{}
+
 type Viewer struct {
 	UserId     int    `column:"user_id" json:"userId"`
 	WorksId    int    `column:"works_id" json:"worksId"`
@@ -16,7 +18,7 @@ func (Viewer) TableName() string {
 }
 
 // 获取关注
-func GetView(maps interface{}) ([]Viewer, error) {
+func (*ViewerModel) GetView(maps interface{}) ([]Viewer, error) {
 	var (
 		view []Viewer
 		err  error
@@ -30,7 +32,7 @@ func GetView(maps interface{}) ([]Viewer, error) {
 }
 
 // 是否查看
-func IsView(userId int, worksId int) bool {
+func (*ViewerModel) IsView(userId int, worksId int) bool {
 	var view Viewer
 	err := dbHandle.Where("user_id = ? AND works_id = ?", userId, worksId).First(&view).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -40,12 +42,7 @@ func IsView(userId int, worksId int) bool {
 	return view.UserId > 0
 }
 
-func AddView(data map[string]interface{}) error {
-	view := Viewer{
-		UserId:  data["userId"].(int),
-		WorksId: data["worksId"].(int),
-	}
-
+func (*ViewerModel) AddView(view *Viewer) error {
 	if err := dbHandle.Select(
 		"UserId",
 		"WorksId",
@@ -57,7 +54,7 @@ func AddView(data map[string]interface{}) error {
 }
 
 // 获取总记录数
-func GetViewTotal(maps interface{}) (int64, error) {
+func (*ViewerModel) GetViewTotal(maps interface{}) (int64, error) {
 	var count int64
 	if err := dbHandle.Model(&Viewer{}).Where(maps).Count(&count).Error; err != nil {
 		return 0, err

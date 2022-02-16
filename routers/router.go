@@ -16,34 +16,39 @@ func InitRouter() *gin.Engine {
 	r.Use(gin.Recovery())
 
 	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
-	r.POST("/auth/login", api.Login)
-	r.POST("/auth/register", api.Register)
-	r.PUT("/auth/edit", middleware.JWT(), api.EditUser)
-	r.GET("/refresh-token", middleware.JWT(), api.RefreshToken)
+	userApi := api.UserApi{}
+	r.POST("/auth/login", userApi.Login)
+	r.POST("/auth/register", userApi.Register)
+	r.PUT("/auth/edit", middleware.JWT(), userApi.EditUser)
+	r.GET("/refresh-token", middleware.JWT(), userApi.RefreshToken)
 	r.POST("/upload", middleware.JWT(), api.UploadImage)
 
 	apiHandle := r.Group("/api")
 	apiHandle.Use(middleware.JWT())
 	{
 		// 类别
-		apiHandle.GET("/category", api.GetCategory)
-		apiHandle.POST("/category", api.AddCategory)
-		apiHandle.PUT("/category/:id", api.EditCategory)
-		apiHandle.DELETE("/category/:id", api.DeleteCategory)
+		categoryApi := api.CategoryApi{}
+		apiHandle.GET("/category", categoryApi.GetCategory)
+		apiHandle.POST("/category", categoryApi.AddCategory)
+		apiHandle.PUT("/category/:id", categoryApi.EditCategory)
+		apiHandle.DELETE("/category/:id", categoryApi.DeleteCategory)
 		// 作品
-		apiHandle.GET("/works", api.GetWorks)
-		apiHandle.GET("/works/:id", api.GetOneWorks)
-		apiHandle.POST("/works", api.AddWorks)
-		apiHandle.PUT("/works/:id", api.EditWorks)
-		apiHandle.DELETE("/works/:id", api.DeleteWorks)
+		worksApi := api.WorksApi{}
+		apiHandle.GET("/works", worksApi.GetWorks)
+		apiHandle.GET("/works/:id", worksApi.GetOneWorks)
+		apiHandle.POST("/works", worksApi.AddWorks)
+		apiHandle.PUT("/works/:id", worksApi.EditWorks)
+		apiHandle.DELETE("/works/:id", worksApi.DeleteWorks)
 		// 评论
-		apiHandle.GET("/topic", api.GetTopics)
-		apiHandle.POST("/topic", api.AddTopic)
-		apiHandle.DELETE("/topic/:id", api.DeleteTopic)
+		topicApi := api.TopicApi{}
+		apiHandle.GET("/topic", topicApi.GetTopics)
+		apiHandle.POST("/topic", topicApi.AddTopic)
+		apiHandle.DELETE("/topic/:id", topicApi.DeleteTopic)
 		// 关注
-		apiHandle.GET("/favorite", api.GetFavorite)
-		apiHandle.POST("/favorite", api.AddFavorite)
-		apiHandle.DELETE("/favorite/:id", api.DeleteFavorite)
+		favoriteApi := api.FavoriteApi{}
+		apiHandle.GET("/favorite", favoriteApi.GetFavorite)
+		apiHandle.POST("/favorite", favoriteApi.AddFavorite)
+		apiHandle.DELETE("/favorite/:id", favoriteApi.DeleteFavorite)
 	}
 
 	return r

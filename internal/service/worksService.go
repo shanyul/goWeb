@@ -4,73 +4,70 @@ import (
 	"designer-api/internal/models"
 )
 
-type Works struct {
-	WorksId          int
-	WorksName        string
-	UserId           int
-	Username         string
-	State            int
-	CatId            int
-	WorksLink        string
-	WorksType        int
-	WorksDescription string
-	Remark           string
-	IsOpen           int
-	FavoriteNum      int
-	ViewNum          int
-	TopicNum         int
-	CreateTime       string
-	UpdateTime       string
-	DeleteTimestamp  int
+type WorksService struct {
+	WorksModel models.WorksModel
+}
 
+type Works struct {
+	models.Works
+
+	OrderBy  string
 	PageNum  int
 	PageSize int
 }
 
-func (w *Works) ExistByName() (bool, error) {
-	return models.ExistWorksByName(w.WorksName)
+func (service *WorksService) ExistByName(worksName string) (bool, error) {
+	return service.WorksModel.ExistWorksByName(worksName)
 }
 
-func (w *Works) Add() error {
-	works := map[string]interface{}{
-		"worksName":        w.WorksName,
-		"userId":           w.UserId,
-		"username":         w.Username,
-		"state":            w.State,
-		"catId":            w.CatId,
-		"worksLink":        w.WorksLink,
-		"worksType":        w.WorksType,
-		"worksDescription": w.WorksDescription,
-		"remark":           w.Remark,
-	}
+func (service *WorksService) Add(w *Works) error {
+	worksData := models.Works{}
+	worksData.WorksName = w.WorksName
+	worksData.UserId = w.UserId
+	worksData.Username = w.Username
+	worksData.State = w.State
+	worksData.CatId = w.CatId
+	worksData.WorksLink = w.WorksLink
+	worksData.WorksType = w.WorksType
+	worksData.WorksDescription = w.WorksDescription
+	worksData.Remark = w.Remark
 
-	if err := models.AddWorks(works); err != nil {
+	if err := service.WorksModel.AddWorks(&worksData); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (w *Works) Edit() error {
-	works := map[string]interface{}{
-		"worksName":        w.WorksName,
-		"state":            w.State,
-		"catId":            w.CatId,
-		"worksLink":        w.WorksLink,
-		"worksType":        w.WorksType,
-		"worksDescription": w.WorksDescription,
-		"remark":           w.Remark,
-	}
+func (service *WorksService) Edit(w *Works) error {
 
-	if err := models.EditWorks(w.WorksId, works); err != nil {
+	worksData := models.Works{}
+	worksData.WorksName = w.WorksName
+	worksData.State = w.State
+	worksData.CatId = w.CatId
+	worksData.WorksLink = w.WorksLink
+	worksData.WorksType = w.WorksType
+	worksData.WorksDescription = w.WorksDescription
+	worksData.Remark = w.Remark
+
+	if err := service.WorksModel.EditWorks(w.WorksId, worksData); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (w *Works) GetAll(orderBy string) ([]models.Works, error) {
-	works, err := models.GetWorks(w.PageNum, w.PageSize, w.getMaps(), orderBy)
+func (service *WorksService) GetAll(w *Works) ([]models.Works, error) {
+	data, err := service.WorksModel.GetWorks(w.PageNum, w.PageSize, service.getMaps(w), w.OrderBy)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (service *WorksService) Get(worksId int) (*models.Works, error) {
+	works, err := service.WorksModel.GetOneWorks(worksId)
 	if err != nil {
 		return nil, err
 	}
@@ -78,36 +75,27 @@ func (w *Works) GetAll(orderBy string) ([]models.Works, error) {
 	return works, nil
 }
 
-func (w *Works) Get() (*models.Works, error) {
-	works, err := models.GetOneWorks(w.WorksId)
-	if err != nil {
-		return nil, err
-	}
-
-	return works, nil
+func (service *WorksService) Delete(worksId int, userId int) error {
+	return service.WorksModel.DeleteWorks(worksId, userId)
 }
 
-func (w *Works) Delete() error {
-	return models.DeleteWorks(w.WorksId, w.UserId)
+func (service *WorksService) ExistByID(worksId int) (bool, error) {
+	return service.WorksModel.ExistWorksById(worksId)
 }
 
-func (w *Works) ExistByID() (bool, error) {
-	return models.ExistWorksById(w.WorksId)
+func (service *WorksService) Count(works *Works) (int64, error) {
+	return service.WorksModel.GetWorksTotal(service.getMaps(works))
 }
 
-func (w *Works) Count() (int64, error) {
-	return models.GetWorksTotal(w.getMaps())
+func (service *WorksService) Increment(worksId int, field string) error {
+	return service.WorksModel.Increment(worksId, field)
 }
 
-func (w *Works) Increment(field string) error {
-	return models.Increment(w.WorksId, field)
+func (service *WorksService) Decrement(worksId int, field string) error {
+	return service.WorksModel.Decrement(worksId, field)
 }
 
-func (w *Works) Decrement(field string) error {
-	return models.Decrement(w.WorksId, field)
-}
-
-func (w *Works) getMaps() map[string]interface{} {
+func (service *WorksService) getMaps(w *Works) map[string]interface{} {
 	maps := make(map[string]interface{})
 	maps["delete_timestamp"] = 0
 	maps["is_open"] = 1

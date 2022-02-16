@@ -4,6 +4,8 @@ import (
 	"gorm.io/gorm"
 )
 
+type CategoryModel struct{}
+
 type Category struct {
 	CatId           int    `gorm:"primary_key" column:"cat_id" json:"catId"`
 	CatName         string `column:"cat_name" json:"catName"`
@@ -22,7 +24,7 @@ func (Category) TableName() string {
 }
 
 // 获取作品
-func GetCategory(pageNum int, pageSize int, maps interface{}) ([]Category, error) {
+func (*CategoryModel) GetCategory(pageNum int, pageSize int, maps interface{}) ([]Category, error) {
 	var (
 		category []Category
 		err      error
@@ -42,7 +44,7 @@ func GetCategory(pageNum int, pageSize int, maps interface{}) ([]Category, error
 }
 
 // 获取总记录数
-func GetCategoryTotal(maps interface{}) (int64, error) {
+func (*CategoryModel) GetCategoryTotal(maps interface{}) (int64, error) {
 	var count int64
 	if err := dbHandle.Model(&Category{}).Where(maps).Count(&count).Error; err != nil {
 		return 0, err
@@ -52,7 +54,7 @@ func GetCategoryTotal(maps interface{}) (int64, error) {
 }
 
 // 通过名称判断是否存在
-func ExistCategoryByName(name string) (bool, error) {
+func (*CategoryModel) ExistCategoryByName(name string) (bool, error) {
 	var category Category
 	err := dbHandle.Select("cat_id").Where("cat_name = ? AND delete_timestamp = ?", name, 0).First(&category).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -63,7 +65,7 @@ func ExistCategoryByName(name string) (bool, error) {
 }
 
 // 通过ID判断是否存在
-func ExistCategoryById(id int) (bool, error) {
+func (*CategoryModel) ExistCategoryById(id int) (bool, error) {
 	var category Category
 	err := dbHandle.Select("cat_id").Where("cat_id = ? AND delete_timestamp = ?", id, 0).First(&category).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -74,20 +76,16 @@ func ExistCategoryById(id int) (bool, error) {
 }
 
 // 新增数据
-func AddCategory(data map[string]interface{}) error {
-	category := Category{
-		CatName:  data["catName"].(string),
-		ParentId: data["parentId"].(int),
-	}
+func (*CategoryModel) AddCategory(data *Category) error {
 
-	if err := dbHandle.Select("cat_name", "parent_id").Create(&category).Error; err != nil {
+	if err := dbHandle.Select("cat_name", "parent_id").Create(&data).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func DeleteCategory(id int) error {
+func (*CategoryModel) DeleteCategory(id int) error {
 	if err := dbHandle.Where("cat_id = ?", id).Delete(Category{}).Error; err != nil {
 		return err
 	}
@@ -95,8 +93,8 @@ func DeleteCategory(id int) error {
 	return nil
 }
 
-func EditCategory(id int, data interface{}) error {
-	if err := dbHandle.Model(&Category{}).Where("cat_id = ?", id).Updates(data).Error; err != nil {
+func (*CategoryModel) EditCategory(id int, category Category) error {
+	if err := dbHandle.Model(&Category{}).Where("cat_id = ?", id).Updates(category).Error; err != nil {
 		return err
 	}
 

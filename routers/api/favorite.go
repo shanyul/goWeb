@@ -12,25 +12,29 @@ import (
 	"github.com/unknwon/com"
 )
 
+type FavoriteApi struct {
+	favoriteService service.FavoriteService
+}
+
 // 获取多个关注
-func GetFavorite(c *gin.Context) {
+func (api *FavoriteApi) GetFavorite(c *gin.Context) {
 	appG := app.Gin{C: c}
-	var favoriteService service.Favorite
+	var favoriteData service.Favorite
 
 	if worksId := c.Query("worksId"); worksId != "" {
-		favoriteService.WorksId = com.StrTo(worksId).MustInt()
+		favoriteData.WorksId = com.StrTo(worksId).MustInt()
 	}
 	if userId := c.Query("userId"); userId != "" {
-		favoriteService.UserId = com.StrTo(userId).MustInt()
+		favoriteData.UserId = com.StrTo(userId).MustInt()
 	}
 
-	total, err := favoriteService.Count()
+	total, err := api.favoriteService.Count(&favoriteData)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
 		return
 	}
 
-	favorite, err := favoriteService.GetAll()
+	favorite, err := api.favoriteService.GetAll(&favoriteData)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
 		return
@@ -44,11 +48,11 @@ func GetFavorite(c *gin.Context) {
 }
 
 // AddFavorite 添加关注
-func AddFavorite(c *gin.Context) {
+func (api *FavoriteApi) AddFavorite(c *gin.Context) {
 	var (
-		appG            = app.Gin{C: c}
-		form            request.AddFavoriteForm
-		favoriteService service.Favorite
+		appG         = app.Gin{C: c}
+		form         request.AddFavoriteForm
+		favoriteData service.Favorite
 	)
 
 	httpCode, errCode := app.BindAndValid(c, &form)
@@ -59,12 +63,11 @@ func AddFavorite(c *gin.Context) {
 
 	// 获取用户信息
 	id := (c.MustGet("userId")).(int)
-	userInfo := service.GetUserInfo(id)
 
-	favoriteService.WorksId = form.WorksId
-	favoriteService.UserId = userInfo.UserId
+	favoriteData.WorksId = form.WorksId
+	favoriteData.UserId = id
 
-	if err := favoriteService.Add(); err != nil {
+	if err := api.favoriteService.Add(&favoriteData); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
 		return
 	}
@@ -73,7 +76,7 @@ func AddFavorite(c *gin.Context) {
 }
 
 // 取消关注
-func DeleteFavorite(c *gin.Context) {
+func (api *FavoriteApi) DeleteFavorite(c *gin.Context) {
 	appG := app.Gin{C: c}
 	valid := validation.Validation{}
 	id := com.StrTo(c.Param("id")).MustInt()
@@ -86,15 +89,13 @@ func DeleteFavorite(c *gin.Context) {
 	}
 
 	// 获取用户信息
-	userid := (c.MustGet("userId")).(int)
-	userInfo := service.GetUserInfo(userid)
+	userId := (c.MustGet("userId")).(int)
 
-	favoriteService := service.Favorite{
-		WorksId: id,
-		UserId:  userInfo.UserId,
-	}
+	favoriteData := service.Favorite{}
+	favoriteData.WorksId = id
+	favoriteData.UserId = userId
 
-	if err := favoriteService.Delete(); err != nil {
+	if err := api.favoriteService.Delete(&favoriteData); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
 		return
 	}

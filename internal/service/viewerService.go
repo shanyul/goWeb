@@ -2,35 +2,35 @@ package service
 
 import "designer-api/internal/models"
 
-type Viewer struct {
-	UserId     int
-	WorksId    int
-	CreateTime string
+type ViewService struct {
+	ViewerModel  models.ViewerModel
+	WorksService WorksService
 }
 
-func (view *Viewer) Add() error {
-	if isView := models.IsFavorite(view.UserId, view.WorksId); !isView {
-		viewData := map[string]interface{}{
-			"userId":  view.UserId,
-			"worksId": view.WorksId,
-		}
+type Viewer struct {
+	models.Viewer
+}
 
-		if err := models.AddView(viewData); err != nil {
+func (service *ViewService) Add(view *Viewer) error {
+	if isView := service.ViewerModel.IsView(view.UserId, view.WorksId); !isView {
+
+		viewData := models.Viewer{}
+		viewData.UserId = view.UserId
+		viewData.WorksId = view.WorksId
+
+		if err := service.ViewerModel.AddView(&viewData); err != nil {
 			return err
 		}
 	}
 
-	worksService := Works{
-		WorksId: view.WorksId,
-	}
 	field := "view_num"
-	_ = worksService.Increment(field)
+	_ = service.WorksService.Increment(view.WorksId, field)
 
 	return nil
 }
 
-func (view *Viewer) GetAll() ([]models.Viewer, error) {
-	data, err := models.GetView(view.getMaps())
+func (service *ViewService) GetAll(view *Viewer) ([]models.Viewer, error) {
+	data, err := service.ViewerModel.GetView(service.getMaps(view))
 	if err != nil {
 		return nil, err
 	}
@@ -38,15 +38,15 @@ func (view *Viewer) GetAll() ([]models.Viewer, error) {
 	return data, nil
 }
 
-func (view *Viewer) isView() bool {
-	return models.IsFavorite(view.UserId, view.WorksId)
+func (service *ViewService) isView(userId int, worksId int) bool {
+	return service.ViewerModel.IsView(userId, worksId)
 }
 
-func (view *Viewer) Count() (int64, error) {
-	return models.GetFavoriteTotal(view.getMaps())
+func (service *ViewService) Count(view *Viewer) (int64, error) {
+	return service.ViewerModel.GetViewTotal(service.getMaps(view))
 }
 
-func (view *Viewer) getMaps() map[string]interface{} {
+func (service *ViewService) getMaps(view *Viewer) map[string]interface{} {
 	maps := make(map[string]interface{})
 	if view.WorksId > 0 {
 		maps["works_id"] = view.WorksId

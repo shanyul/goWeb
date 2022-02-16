@@ -2,8 +2,10 @@ package models
 
 import "gorm.io/gorm"
 
+type UserModel struct{}
+
 type User struct {
-	UserID          int    `gorm:"primary_key" column:"user_id" json:"userId"`
+	UserId          int    `gorm:"primary_key" column:"user_id" json:"userId"`
 	Username        string `column:"username" json:"username"`
 	Password        string `column:"password" json:"password"`
 	Nickname        string `column:"nickname" json:"nickname"`
@@ -29,7 +31,7 @@ func (User) TableName() string {
 }
 
 // CheckAuth 验证用户
-func CheckAuth(username, password string) (*User, bool) {
+func (*UserModel) CheckAuth(username, password string) (*User, bool) {
 	var auth User
 	err := dbHandle.Select(
 		"user_id", "username", "nickname", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
@@ -38,22 +40,22 @@ func CheckAuth(username, password string) (*User, bool) {
 		return nil, false
 	}
 
-	return &auth, auth.UserID > 0
+	return &auth, auth.UserId > 0
 }
 
 // 判断昵称是否存在
-func ExistNickname(name string) (bool, error) {
+func (*UserModel) ExistNickname(name string) (bool, error) {
 	var user User
 	err := dbHandle.Select("user_id").Where("nickname = ?", name).First(&user).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false, err
 	}
 
-	return user.UserID > 0, nil
+	return user.UserId > 0, nil
 }
 
 // 判断昵称是否存在
-func GetByNickname(name string) (*User, error) {
+func (*UserModel) GetByNickname(name string) (*User, error) {
 	var user User
 	err := dbHandle.Select(
 		"user_id", "username", "nickname", "password", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
@@ -66,25 +68,19 @@ func GetByNickname(name string) (*User, error) {
 }
 
 // AddUser 验证用户
-func AddUser(data map[string]interface{}) error {
-	user := User{
-		Username: data["username"].(string),
-		Password: data["password"].(string),
-		Nickname: data["nickname"].(string),
-	}
-
+func (*UserModel) AddUser(data *User) error {
 	if err := dbHandle.Select(
 		"username",
 		"password",
 		"nickname",
-	).Create(&user).Error; err != nil {
+	).Create(&data).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func EditUser(id int, data interface{}) error {
+func (*UserModel) EditUser(id int, data User) error {
 	if err := dbHandle.Model(&User{}).Where("user_id = ?", id).Updates(data).Error; err != nil {
 		return err
 	}
