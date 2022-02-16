@@ -2,53 +2,47 @@ package service
 
 import "designer-api/internal/models"
 
+type CategoryService struct {
+	CategoryModel models.CategoryModel
+}
+
 type Category struct {
-	CatId           int
-	CatName         string
-	ParentId        int
-	IsDirectory     int
-	Level           int
-	Path            string
-	CreateTime      string
-	UpdateTime      string
-	DeleteTimestamp int
+	models.Category
 
 	PageNum  int
 	PageSize int
 }
 
-func (cat *Category) ExistByName() (bool, error) {
-	return models.ExistCategoryByName(cat.CatName)
+func (service *CategoryService) ExistByName(name string) (bool, error) {
+	return service.CategoryModel.ExistCategoryByName(name)
 }
 
-func (cat *Category) Add() error {
-	category := map[string]interface{}{
-		"catName":  cat.CatName,
-		"parentId": cat.ParentId,
-	}
+func (service *CategoryService) Add(cat *Category) error {
+	categoryData := models.Category{}
+	categoryData.CatName = cat.CatName
+	categoryData.ParentId = cat.ParentId
 
-	if err := models.AddCategory(category); err != nil {
+	if err := service.CategoryModel.AddCategory(&categoryData); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (cat *Category) Edit() error {
-	category := map[string]interface{}{
-		"catName":  cat.CatName,
-		"parentId": cat.ParentId,
-	}
+func (service *CategoryService) Edit(cat *Category) error {
+	categoryData := models.Category{}
+	categoryData.CatName = cat.CatName
+	categoryData.ParentId = cat.ParentId
 
-	if err := models.EditCategory(cat.CatId, category); err != nil {
+	if err := service.CategoryModel.EditCategory(cat.CatId, categoryData); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (cat *Category) GetAll() ([]models.Category, error) {
-	category, err := models.GetCategory(cat.PageNum, cat.PageSize, cat.getMaps())
+func (service *CategoryService) GetAll(cat *Category) ([]models.Category, error) {
+	category, err := service.CategoryModel.GetCategory(cat.PageNum, cat.PageSize, service.getMaps(cat))
 	if err != nil {
 		return nil, err
 	}
@@ -56,19 +50,19 @@ func (cat *Category) GetAll() ([]models.Category, error) {
 	return category, nil
 }
 
-func (cat *Category) Delete() error {
-	return models.DeleteCategory(cat.CatId)
+func (service *CategoryService) Delete(catId int) error {
+	return service.CategoryModel.DeleteCategory(catId)
 }
 
-func (cat *Category) ExistByID() (bool, error) {
-	return models.ExistCategoryById(cat.CatId)
+func (service *CategoryService) ExistByID(catId int) (bool, error) {
+	return service.CategoryModel.ExistCategoryById(catId)
 }
 
-func (cat *Category) Count() (int64, error) {
-	return models.GetCategoryTotal(cat.getMaps())
+func (service *CategoryService) Count(cat *Category) (int64, error) {
+	return service.CategoryModel.GetCategoryTotal(service.getMaps(cat))
 }
 
-func (cat *Category) getMaps() map[string]interface{} {
+func (service *CategoryService) getMaps(cat *Category) map[string]interface{} {
 	maps := make(map[string]interface{})
 	maps["delete_timestamp"] = 0
 	if cat.CatName != "" {

@@ -14,8 +14,12 @@ import (
 	"github.com/unknwon/com"
 )
 
+type CategoryApi struct {
+	categoryService service.CategoryService
+}
+
 //获取多个作品
-func GetCategory(c *gin.Context) {
+func (api *CategoryApi) GetCategory(c *gin.Context) {
 	appG := app.Gin{C: c}
 	valid := validation.Validation{}
 
@@ -32,20 +36,19 @@ func GetCategory(c *gin.Context) {
 		return
 	}
 
-	categoryService := service.Category{
-		CatName:  name,
-		ParentId: parentId,
-		PageNum:  util.GetPage(c),
-		PageSize: setting.AppSetting.PageSize,
-	}
+	categoryData := service.Category{}
+	categoryData.CatName = name
+	categoryData.ParentId = parentId
+	categoryData.PageNum = util.GetPage(c)
+	categoryData.PageSize = setting.AppSetting.PageSize
 
-	total, err := categoryService.Count()
+	total, err := api.categoryService.Count(&categoryData)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
 		return
 	}
 
-	category, err := categoryService.GetAll()
+	category, err := api.categoryService.GetAll(&categoryData)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
 		return
@@ -59,7 +62,7 @@ func GetCategory(c *gin.Context) {
 }
 
 //新增文章作品
-func AddCategory(c *gin.Context) {
+func (api *CategoryApi) AddCategory(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
 		form request.AddCategoryForm
@@ -70,13 +73,11 @@ func AddCategory(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
+	categoryData := service.Category{}
+	categoryData.CatName = form.CatName
+	categoryData.ParentId = form.ParentId
 
-	categoryService := service.Category{
-		CatName:  form.CatName,
-		ParentId: form.ParentId,
-	}
-
-	if err := categoryService.Add(); err != nil {
+	if err := api.categoryService.Add(&categoryData); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
 		return
 	}
@@ -85,7 +86,7 @@ func AddCategory(c *gin.Context) {
 }
 
 //修改文章作品
-func EditCategory(c *gin.Context) {
+func (api *CategoryApi) EditCategory(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
 		form = request.EditCategoryForm{CatId: com.StrTo(c.Param("id")).MustInt()}
@@ -96,14 +97,12 @@ func EditCategory(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
+	categoryData := service.Category{}
+	categoryData.CatId = form.CatId
+	categoryData.CatName = form.CatName
+	categoryData.ParentId = form.ParentId
 
-	categoryService := service.Category{
-		CatId:    form.CatId,
-		CatName:  form.CatName,
-		ParentId: form.ParentId,
-	}
-
-	exists, err := categoryService.ExistByID()
+	exists, err := api.categoryService.ExistByID(form.CatId)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
 		return
@@ -113,7 +112,7 @@ func EditCategory(c *gin.Context) {
 		return
 	}
 
-	if err := categoryService.Edit(); err != nil {
+	if err := api.categoryService.Edit(&categoryData); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
 		return
 	}
@@ -122,7 +121,7 @@ func EditCategory(c *gin.Context) {
 }
 
 //删除文章作品
-func DeleteCategory(c *gin.Context) {
+func (api *CategoryApi) DeleteCategory(c *gin.Context) {
 	appG := app.Gin{C: c}
 	valid := validation.Validation{}
 	id := com.StrTo(c.Param("id")).MustInt()
@@ -134,11 +133,7 @@ func DeleteCategory(c *gin.Context) {
 		return
 	}
 
-	categoryService := service.Category{
-		CatId: id,
-	}
-
-	exists, err := categoryService.ExistByID()
+	exists, err := api.categoryService.ExistByID(id)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
 		return
@@ -148,7 +143,7 @@ func DeleteCategory(c *gin.Context) {
 		return
 	}
 
-	err = categoryService.Delete()
+	err = api.categoryService.Delete(id)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
 		return

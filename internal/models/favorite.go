@@ -4,6 +4,8 @@ import (
 	"gorm.io/gorm"
 )
 
+type FavoriteModel struct{}
+
 type Favorite struct {
 	UserId     int    `column:"user_id" json:"userId"`
 	WorksId    int    `column:"works_id" json:"worksId"`
@@ -16,7 +18,7 @@ func (Favorite) TableName() string {
 }
 
 // 获取关注
-func GetFavorite(maps interface{}) ([]Favorite, error) {
+func (*FavoriteModel) GetFavorite(maps interface{}) ([]Favorite, error) {
 	var (
 		favorite []Favorite
 		err      error
@@ -30,7 +32,7 @@ func GetFavorite(maps interface{}) ([]Favorite, error) {
 }
 
 // 是否关注
-func IsFavorite(userId int, worksId int) bool {
+func (*FavoriteModel) IsFavorite(userId int, worksId int) bool {
 	var favorite Favorite
 	err := dbHandle.Where("user_id = ? AND works_id = ?", userId, worksId).First(&favorite).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -40,12 +42,7 @@ func IsFavorite(userId int, worksId int) bool {
 	return favorite.UserId > 0
 }
 
-func AddFavorite(data map[string]interface{}) error {
-	favorite := Favorite{
-		UserId:  data["userId"].(int),
-		WorksId: data["worksId"].(int),
-	}
-
+func (*FavoriteModel) AddFavorite(favorite *Favorite) error {
 	if err := dbHandle.Select(
 		"UserId",
 		"WorksId",
@@ -57,7 +54,7 @@ func AddFavorite(data map[string]interface{}) error {
 }
 
 // 获取总记录数
-func GetFavoriteTotal(maps interface{}) (int64, error) {
+func (*FavoriteModel) GetFavoriteTotal(maps interface{}) (int64, error) {
 	var count int64
 	if err := dbHandle.Model(&Favorite{}).Where(maps).Count(&count).Error; err != nil {
 		return 0, err
@@ -66,7 +63,7 @@ func GetFavoriteTotal(maps interface{}) (int64, error) {
 	return count, nil
 }
 
-func DeleteFavorite(userId int, worksId int) error {
+func (*FavoriteModel) DeleteFavorite(userId int, worksId int) error {
 	if err := dbHandle.Where("user_id = ? AND works_id = ?", userId, worksId).Delete(Favorite{}).Error; err != nil {
 		return err
 	}

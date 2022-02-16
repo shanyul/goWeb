@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+type TopicModel struct{}
+
 type Topic struct {
 	TopicId         int    `gorm:"primary_key" column:"topic_id" json:"topicId"`
 	UserId          int    `column:"user_id" json:"userId"`
@@ -22,7 +24,7 @@ func (Topic) TableName() string {
 }
 
 // 获取评论
-func GetTopic(pageNum int, pageSize int, maps interface{}) ([]Topic, error) {
+func (*TopicModel) GetTopic(pageNum int, pageSize int, maps interface{}) ([]Topic, error) {
 	var (
 		topic []Topic
 		err   error
@@ -41,15 +43,7 @@ func GetTopic(pageNum int, pageSize int, maps interface{}) ([]Topic, error) {
 	return topic, nil
 }
 
-func AddTopic(data map[string]interface{}) error {
-	topic := Topic{
-		UserId:     data["userId"].(int),
-		Username:   data["username"].(string),
-		WorksId:    data["worksId"].(int),
-		Content:    data["content"].(string),
-		RelationId: data["relationId"].(int),
-	}
-
+func (*TopicModel) AddTopic(topic *Topic) error {
 	if err := dbHandle.Select(
 		"UserId",
 		"Username",
@@ -64,7 +58,7 @@ func AddTopic(data map[string]interface{}) error {
 }
 
 // 获取总记录数
-func GetTopicTotal(maps interface{}) (int64, error) {
+func (*TopicModel) GetTopicTotal(maps interface{}) (int64, error) {
 	var count int64
 	if err := dbHandle.Model(&Topic{}).Where(maps).Count(&count).Error; err != nil {
 		return 0, err
@@ -73,7 +67,7 @@ func GetTopicTotal(maps interface{}) (int64, error) {
 	return count, nil
 }
 
-func GetOneTopic(id int) (*Topic, error) {
+func (*TopicModel) GetOneTopic(id int) (*Topic, error) {
 	var topic Topic
 	if err := dbHandle.Where("topic_id = ?", id).First(&topic).Error; err != nil {
 		return nil, err
@@ -82,7 +76,7 @@ func GetOneTopic(id int) (*Topic, error) {
 	return &topic, nil
 }
 
-func DeleteTopic(id int, userId int) error {
+func (*TopicModel) DeleteTopic(id int, userId int) error {
 	maps := make(map[string]interface{})
 	maps["delete_timestamp"] = time.Now().Unix()
 	if err := dbHandle.Model(&Topic{}).Select("delete_timestamp").Where("topic_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {

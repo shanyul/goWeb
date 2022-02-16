@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+type WorksModel struct{}
+
 type Works struct {
 	CatId    int      `json:"cat_id"`
 	Category Category `gorm:"foreignKey:cat_id" json:"category"`
@@ -15,7 +17,7 @@ type Works struct {
 	Username         string `column:"username" json:"username"`
 	WorksName        string `column:"works_name" json:"worksName"`
 	WorksLink        string `column:"works_link" json:"worksLink"`
-	WorksType        string `column:"works_type" json:"worksType"`
+	WorksType        int    `column:"works_type" json:"worksType"`
 	WorksDescription string `column:"works_description" json:"worksDescription"`
 	FavoriteNum      int    `column:"favorite_num" json:"favoriteNum"`
 	ViewNum          int    `column:"view_num" json:"viewNum"`
@@ -29,7 +31,7 @@ type Works struct {
 }
 
 // GetWorks 获取作品
-func GetWorks(pageNum int, pageSize int, maps interface{}, orderBy string) ([]Works, error) {
+func (*WorksModel) GetWorks(pageNum int, pageSize int, maps interface{}, orderBy string) ([]Works, error) {
 	var works []Works
 	var err error
 	if orderBy != "" {
@@ -45,7 +47,7 @@ func GetWorks(pageNum int, pageSize int, maps interface{}, orderBy string) ([]Wo
 	return works, nil
 }
 
-func GetOneWorks(id int) (*Works, error) {
+func (*WorksModel) GetOneWorks(id int) (*Works, error) {
 	var works Works
 	err := dbHandle.Where("works_id = ?", id).First(&works).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -59,7 +61,7 @@ func GetOneWorks(id int) (*Works, error) {
 	return &works, nil
 }
 
-func GetWorksTotal(maps interface{}) (int64, error) {
+func (*WorksModel) GetWorksTotal(maps interface{}) (int64, error) {
 	var count int64
 	if err := dbHandle.Model(&Works{}).Where(maps).Count(&count).Error; err != nil {
 		return 0, err
@@ -67,7 +69,7 @@ func GetWorksTotal(maps interface{}) (int64, error) {
 	return count, nil
 }
 
-func Increment(id int, field string) error {
+func (*WorksModel) Increment(id int, field string) error {
 	opString := fmt.Sprintf("%s + ?", field)
 	if err := dbHandle.Model(&Works{}).Where("works_id = ?", id).UpdateColumn(field, gorm.Expr(opString, 1)).Error; err != nil {
 		return err
@@ -75,7 +77,7 @@ func Increment(id int, field string) error {
 	return nil
 }
 
-func Decrement(id int, field string) error {
+func (*WorksModel) Decrement(id int, field string) error {
 	opString := fmt.Sprintf("%s - ?", field)
 	if err := dbHandle.Model(&Works{}).Where(field+" > 0 AND works_id = ?", id).UpdateColumn(field, gorm.Expr(opString, 1)).Error; err != nil {
 		return err
@@ -84,7 +86,7 @@ func Decrement(id int, field string) error {
 }
 
 // ExistWorksByName 通过名称判断是否存在
-func ExistWorksByName(name string) (bool, error) {
+func (*WorksModel) ExistWorksByName(name string) (bool, error) {
 	var works Works
 	err := dbHandle.Select("works_id").Where("works_name = ? AND deleted_timestamp = ? ", name, 0).First(&works).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -94,7 +96,7 @@ func ExistWorksByName(name string) (bool, error) {
 	return works.WorksId > 0, nil
 }
 
-func ExistWorksById(id int) (bool, error) {
+func (*WorksModel) ExistWorksById(id int) (bool, error) {
 	var works Works
 	err := dbHandle.Select("works_id").Where("works_id = ?", id).First(&works).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -105,19 +107,7 @@ func ExistWorksById(id int) (bool, error) {
 }
 
 // 新增数据
-func AddWorks(data map[string]interface{}) error {
-	works := Works{
-		CatId:            data["catId"].(int),
-		WorksName:        data["worksName"].(string),
-		UserId:           data["userId"].(int),
-		Username:         data["username"].(string),
-		State:            data["state"].(int),
-		WorksLink:        data["worksLink"].(string),
-		WorksType:        data["worksType"].(string),
-		WorksDescription: data["worksDescription"].(string),
-		Remark:           data["remark"].(string),
-	}
-
+func (*WorksModel) AddWorks(works *Works) error {
 	if err := dbHandle.Select(
 		"cat_id", "works_name", "user_id", "state", "works_link", "works_type", "works_description", "remark",
 	).Create(&works).Error; err != nil {
@@ -127,7 +117,7 @@ func AddWorks(data map[string]interface{}) error {
 	return nil
 }
 
-func DeleteWorks(id int, userId int) error {
+func (*WorksModel) DeleteWorks(id int, userId int) error {
 	maps := make(map[string]interface{})
 	maps["delete_timestamp"] = time.Now().Unix()
 	if err := dbHandle.Model(&Works{}).Select("delete_timestamp").Where("works_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {
@@ -137,8 +127,8 @@ func DeleteWorks(id int, userId int) error {
 	return nil
 }
 
-func EditWorks(id int, data interface{}) error {
-	if err := dbHandle.Model(&Works{}).Where("works_id = ?", id).Updates(data).Error; err != nil {
+func (*WorksModel) EditWorks(id int, works Works) error {
+	if err := dbHandle.Model(&Works{}).Where("works_id = ?", id).Updates(works).Error; err != nil {
 		return err
 	}
 

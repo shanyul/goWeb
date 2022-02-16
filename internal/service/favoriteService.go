@@ -2,36 +2,35 @@ package service
 
 import "designer-api/internal/models"
 
-type Favorite struct {
-	UserId     int
-	WorksId    int
-	CreateTime string
+type FavoriteService struct {
+	FavoriteModel models.FavoriteModel
+	WorksService  WorksService
 }
 
-func (favorite *Favorite) Add() error {
-	if isFavorite := models.IsFavorite(favorite.UserId, favorite.WorksId); !isFavorite {
-		favoriteData := map[string]interface{}{
-			"userId":  favorite.UserId,
-			"worksId": favorite.WorksId,
-		}
+type Favorite struct {
+	models.Favorite
+}
 
-		if err := models.AddFavorite(favoriteData); err != nil {
+func (service *FavoriteService) Add(favorite *Favorite) error {
+	if isFavorite := service.FavoriteModel.IsFavorite(favorite.UserId, favorite.WorksId); !isFavorite {
+
+		favoriteData := models.Favorite{}
+		favoriteData.UserId = favorite.UserId
+		favoriteData.WorksId = favorite.WorksId
+
+		if err := service.FavoriteModel.AddFavorite(&favoriteData); err != nil {
 			return err
 		}
 
-		worksService := Works{
-			WorksId: favorite.WorksId,
-		}
-
 		field := "favorite_num"
-		_ = worksService.Increment(field)
+		_ = service.WorksService.Increment(favorite.WorksId, field)
 	}
 
 	return nil
 }
 
-func (favorite *Favorite) GetAll() ([]models.Favorite, error) {
-	data, err := models.GetFavorite(favorite.getMaps())
+func (service *FavoriteService) GetAll(favorite *Favorite) ([]models.Favorite, error) {
+	data, err := service.FavoriteModel.GetFavorite(service.getMaps(favorite))
 	if err != nil {
 		return nil, err
 	}
@@ -39,36 +38,33 @@ func (favorite *Favorite) GetAll() ([]models.Favorite, error) {
 	return data, nil
 }
 
-func (favorite *Favorite) isFavorite() bool {
-	return models.IsFavorite(favorite.UserId, favorite.WorksId)
+func (service *FavoriteService) IsFavorite(favorite *Favorite) bool {
+	return service.FavoriteModel.IsFavorite(favorite.UserId, favorite.WorksId)
 }
 
-func (favorite *Favorite) Delete() error {
-	count, err := models.GetFavoriteTotal(favorite.getMaps())
+func (service *FavoriteService) Delete(favorite *Favorite) error {
+	count, err := service.FavoriteModel.GetFavoriteTotal(service.getMaps(favorite))
 	if err != nil {
 		return err
 	}
 
 	if count > 0 {
-		if err := models.DeleteFavorite(favorite.UserId, favorite.WorksId); err != nil {
+		if err := service.FavoriteModel.DeleteFavorite(favorite.UserId, favorite.WorksId); err != nil {
 			return err
 		}
 		// 扣减关注数
-		worksService := Works{
-			WorksId: favorite.WorksId,
-		}
 		field := "favorite_num"
-		_ = worksService.Decrement(field)
+		_ = service.WorksService.Decrement(favorite.WorksId, field)
 	}
 
 	return nil
 }
 
-func (favorite *Favorite) Count() (int64, error) {
-	return models.GetFavoriteTotal(favorite.getMaps())
+func (service *FavoriteService) Count(favorite *Favorite) (int64, error) {
+	return service.FavoriteModel.GetFavoriteTotal(service.getMaps(favorite))
 }
 
-func (favorite *Favorite) getMaps() map[string]interface{} {
+func (service *FavoriteService) getMaps(favorite *Favorite) map[string]interface{} {
 	maps := make(map[string]interface{})
 	if favorite.WorksId > 0 {
 		maps["works_id"] = favorite.WorksId

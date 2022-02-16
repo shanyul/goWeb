@@ -10,69 +10,52 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Auth struct {
-	Username        string
-	Nickname        string
-	Password        string
-	ConfirmPassword string
+type UserService struct {
+	UserModel models.UserModel
 }
 
-type UserInfo struct {
-	UserId     int
-	Username   string
-	Nickname   string
-	Avatar     string
-	BgImage    string
-	Phone      string
-	Email      string
-	State      int
-	Province   string
-	City       string
-	Distinct   string
-	Address    string
-	Remark     string
-	CreateTime string
-	Token      string
+type User struct {
+	models.User
+	Token           string
+	ConfirmPassword string
 }
 
 const prefixLoginKey = "key_user_login"
 
-func GetUserInfo(id int) UserInfo {
+func (service *UserService) GetUserInfo(id int) User {
 	key := fmt.Sprintf("%s:%d", prefixLoginKey, id)
 	cacheData, _ := gredis.Get(key)
-	var userInfo UserInfo
+	var userInfo User
 	_ = json.Unmarshal(cacheData, &userInfo)
 
 	return userInfo
 }
 
-func (a *Auth) ExistByName() (bool, error) {
-	return models.ExistNickname(a.Nickname)
+func (service *UserService) ExistNickname(nickname string) (bool, error) {
+	return service.UserModel.ExistNickname(nickname)
 }
 
-func (a *Auth) AddUser() error {
-	category := map[string]interface{}{
-		"username": a.Username,
-		"nickname": a.Nickname,
-		"password": a.Password,
-	}
+func (service *UserService) AddUser(a *User) error {
+	user := models.User{}
+	user.Username = a.Username
+	user.Nickname = a.Nickname
+	user.Password = a.Password
 
-	if err := models.AddUser(category); err != nil {
+	if err := service.UserModel.AddUser(&user); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (a *Auth) CheckUser() (info map[string]interface{}, code int) {
-	authInfo, err := models.GetByNickname(a.Nickname)
+func (service *UserService) CheckUser(a *User) (info map[string]interface{}, code int) {
+	authInfo, err := service.UserModel.GetByNickname(a.Nickname)
 	code = e.SUCCESS
 	if err != nil {
 		code = e.ERROR_LOGIN_PARAMS
 		return
 	}
 	// 验证密码是否正确
-	fmt.Println(authInfo.Password, a.Password)
 	err = bcrypt.CompareHashAndPassword([]byte(authInfo.Password), []byte(a.Password))
 	fmt.Println("errrr", err)
 	if err != nil {
@@ -80,12 +63,12 @@ func (a *Auth) CheckUser() (info map[string]interface{}, code int) {
 		return
 	}
 
-	token, err := util.GenerateToken(authInfo.UserID)
+	token, err := util.GenerateToken(authInfo.UserId)
 	if err != nil {
 		code = e.ERROR_AUTH_TOKEN
 	} else {
 		info = make(map[string]interface{})
-		info["userId"] = authInfo.UserID
+		info["userId"] = authInfo.UserId
 		info["username"] = authInfo.Username
 		info["nickname"] = authInfo.Nickname
 		info["avatar"] = authInfo.Avatar
@@ -101,7 +84,7 @@ func (a *Auth) CheckUser() (info map[string]interface{}, code int) {
 		info["token"] = token
 
 		// 保存用户信息
-		key := fmt.Sprintf("%s:%d", prefixLoginKey, authInfo.UserID)
+		key := fmt.Sprintf("%s:%d", prefixLoginKey, authInfo.UserId)
 		ttl := 60 * 60 * 24
 		_ = gredis.Set(key, info, ttl)
 
@@ -111,19 +94,19 @@ func (a *Auth) CheckUser() (info map[string]interface{}, code int) {
 	return
 }
 
-func (u *UserInfo) Edit() error {
-	user := map[string]interface{}{
-		"username": u.Username,
-		"nickname": u.Nickname,
-		"avatar":   u.Avatar,
-		"bg_image": u.BgImage,
-		"province": u.Province,
-		"city":     u.City,
-		"distinct": u.Distinct,
-		"remark":   u.Remark,
-	}
+func (service *UserService) Edit(u User) error {
+	user := models.User{}
+	user.Username = u.Username
+	user.Nickname = u.Nickname
+	user.Avatar = u.Avatar
+	user.BgImage = u.BgImage
+	user.Province = u.Province
+	user.City = u.City
+	user.Distinct = u.Distinct
+	user.Address = u.Address
+	user.Remark = u.Remark
 
-	if err := models.EditUser(u.UserId, user); err != nil {
+	if err := service.UserModel.EditUser(u.UserId, user); err != nil {
 		return err
 	}
 
