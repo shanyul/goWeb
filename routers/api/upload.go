@@ -10,7 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UploadImage(c *gin.Context) {
+type UploadApi struct{}
+
+func (api *UploadApi) UploadImage(c *gin.Context) {
 	appG := app.Gin{C: c}
 	file, image, err := c.Request.FormFile("image")
 	if err != nil {
