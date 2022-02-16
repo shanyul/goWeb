@@ -24,6 +24,7 @@ const (
 	ERROR_GET_WORKS_FAIL         = 10015
 	ERROR_CHECK_EXIST_WORKS_FAIL = 10016
 	ERROR_DELETE_WORKS_FAIL      = 10017
+	ERROR_UPLOAD_FILE_NOT_INPUT  = 10018
 
 	ERROR_AUTH_CHECK_TOKEN_FAIL    = 20001
 	ERROR_AUTH_CHECK_TOKEN_TIMEOUT = 20002
@@ -72,6 +73,7 @@ var MsgFlags = map[int]string{
 	ERROR_CONFIRM_PASSWORD_NOT_EQ:   "确认密码错误",
 	ERROR_REGISTER_FAIL:             "注册失败",
 	ERROR_GENERATE_PASSWORD:         "生成密码失败，请重试",
+	ERROR_UPLOAD_FILE_NOT_INPUT:     "请选择上传文件",
 }
 
 func GetMsg(code int) string {

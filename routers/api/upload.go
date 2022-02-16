@@ -17,7 +17,7 @@ func (api *UploadApi) UploadImage(c *gin.Context) {
 	file, image, err := c.Request.FormFile("image")
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_FILE_NOT_INPUT, nil)
 		return
 	}
 

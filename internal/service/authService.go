@@ -57,7 +57,6 @@ func (service *UserService) CheckUser(a *User) (info map[string]interface{}, cod
 	}
 	// 验证密码是否正确
 	err = bcrypt.CompareHashAndPassword([]byte(authInfo.Password), []byte(a.Password))
-	fmt.Println("errrr", err)
 	if err != nil {
 		code = e.ERROR_LOGIN_PARAMS
 		return
