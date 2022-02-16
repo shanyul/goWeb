@@ -76,6 +76,7 @@ func (api *TopicApi) AddTopic(c *gin.Context) {
 
 	topicData.WorksId = form.WorksId
 	topicData.Content = form.Content
+	topicData.RelationId = form.RelationId
 	topicData.UserId = userInfo.UserId
 	topicData.Username = userInfo.Username
 

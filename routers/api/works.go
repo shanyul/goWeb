@@ -140,6 +140,7 @@ func (api *WorksApi) AddWorks(c *gin.Context) {
 	worksData.CatId = form.CatId
 	worksData.WorksLink = form.WorksLink
 	worksData.WorksType = form.WorksType
+	worksData.IsOpen = form.IsOpen
 	worksData.WorksDescription = form.WorksDescription
 	worksData.Remark = form.Remark
 
@@ -157,7 +158,6 @@ func (api *WorksApi) EditWorks(c *gin.Context) {
 		appG = app.Gin{C: c}
 		form request.EditWorksForm
 	)
-	worksId := com.StrTo(c.Param("id")).MustInt()
 
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
@@ -166,16 +166,17 @@ func (api *WorksApi) EditWorks(c *gin.Context) {
 	}
 
 	worksData := service.Works{}
-	worksData.WorksId = worksId
+	worksData.WorksId = form.WorksId
 	worksData.WorksName = form.WorksName
 	worksData.State = form.State
 	worksData.CatId = form.CatId
+	worksData.IsOpen = form.IsOpen
 	worksData.WorksLink = form.WorksLink
 	worksData.WorksType = form.WorksType
 	worksData.WorksDescription = form.WorksDescription
 	worksData.Remark = form.Remark
 
-	exists, err := api.worksService.ExistByID(worksId)
+	exists, err := api.worksService.ExistByID(form.WorksId)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_CHECK_EXIST_WORKS_FAIL, nil)
 		return

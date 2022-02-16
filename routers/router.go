@@ -35,7 +35,7 @@ func InitRouter() *gin.Engine {
 		apiHandle.GET("/works", baseApi.WorksApi.GetWorks)
 		apiHandle.GET("/works/:id", baseApi.WorksApi.GetOneWorks)
 		apiHandle.POST("/works", baseApi.WorksApi.AddWorks)
-		apiHandle.PUT("/works/:id", baseApi.WorksApi.EditWorks)
+		apiHandle.PUT("/works", baseApi.WorksApi.EditWorks)
 		apiHandle.DELETE("/works/:id", baseApi.WorksApi.DeleteWorks)
 		// 评论
 		apiHandle.GET("/topic", baseApi.TopicApi.GetTopics)

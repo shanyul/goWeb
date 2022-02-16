@@ -3,8 +3,8 @@ package request
 // AddWorksForm 作品表单
 type AddWorksForm struct {
 	WorksName        string `form:"worksName" valid:"Required"`
-	UserId           int    `form:"userId" valid:"Required;Min(1)"`
-	State            int    `form:"state" valid:"Required;Range(0,1)"`
+	State            int    `form:"state" valid:"Range(0,1)"`
+	IsOpen           int    `form:"isOpen" valid:"Range(0,1)"`
 	CatId            int    `form:"catId" valid:"Required;Min(1)"`
 	WorksLink        string `form:"worksLink" valid:"Required;MaxSize(255)"`
 	WorksType        int    `form:"worksType" valid:"Required"`
@@ -16,7 +16,8 @@ type AddWorksForm struct {
 type EditWorksForm struct {
 	WorksId          int    `form:"worksId" valid:"Required"`
 	WorksName        string `form:"worksName" valid:"Required"`
-	State            int    `form:"state" valid:"Required;Range(0,1)"`
+	State            int    `form:"state" valid:"Range(0,1)"`
+	IsOpen           int    `form:"isOpen" valid:"Range(0,1)"`
 	CatId            int    `form:"catId" valid:"Required;Min(1)"`
 	WorksLink        string `form:"worksLink" valid:"Required;MaxSize(255)"`
 	WorksType        int    `form:"worksType" valid:"Required"`

@@ -27,6 +27,7 @@ func (service *WorksService) Add(w *Works) error {
 	worksData.Username = w.Username
 	worksData.State = w.State
 	worksData.CatId = w.CatId
+	worksData.IsOpen = w.IsOpen
 	worksData.WorksLink = w.WorksLink
 	worksData.WorksType = w.WorksType
 	worksData.WorksDescription = w.WorksDescription
@@ -45,6 +46,7 @@ func (service *WorksService) Edit(w *Works) error {
 	worksData.WorksName = w.WorksName
 	worksData.State = w.State
 	worksData.CatId = w.CatId
+	worksData.IsOpen = w.IsOpen
 	worksData.WorksLink = w.WorksLink
 	worksData.WorksType = w.WorksType
 	worksData.WorksDescription = w.WorksDescription
