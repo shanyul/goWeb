@@ -3,8 +3,8 @@ package service
 import "designer-api/internal/models"
 
 type ViewService struct {
-	ViewerModel  models.ViewerModel
-	WorksService WorksService
+	ViewerModel models.ViewerModel
+	WorksModel  models.WorksModel
 }
 
 type Viewer struct {
@@ -24,7 +24,7 @@ func (service *ViewService) Add(view *Viewer) error {
 	}
 
 	field := "view_num"
-	_ = service.WorksService.Increment(view.WorksId, field)
+	_ = service.WorksModel.Increment(view.WorksId, field)
 
 	return nil
 }

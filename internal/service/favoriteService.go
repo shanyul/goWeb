@@ -4,7 +4,7 @@ import "designer-api/internal/models"
 
 type FavoriteService struct {
 	FavoriteModel models.FavoriteModel
-	WorksService  WorksService
+	WorksModel    models.WorksModel
 }
 
 type Favorite struct {
@@ -23,7 +23,7 @@ func (service *FavoriteService) Add(favorite *Favorite) error {
 		}
 
 		field := "favorite_num"
-		_ = service.WorksService.Increment(favorite.WorksId, field)
+		_ = service.WorksModel.Increment(favorite.WorksId, field)
 	}
 
 	return nil
@@ -54,7 +54,7 @@ func (service *FavoriteService) Delete(favorite *Favorite) error {
 		}
 		// 扣减关注数
 		field := "favorite_num"
-		_ = service.WorksService.Decrement(favorite.WorksId, field)
+		_ = service.WorksModel.Decrement(favorite.WorksId, field)
 	}
 
 	return nil

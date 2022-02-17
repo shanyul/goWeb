@@ -5,9 +5,8 @@ const (
 	ERROR          = 500
 	INVALID_PARAMS = 400
 
-	ERROR_LOGIN_PARAMS = 10000
-
-	ERROR_EXIST_CAT       = 10001
+	ERROR_LOGIN_PARAMS    = 10000
+	ERROR_LOGIN_FAIL      = 10001
 	ERROR_NOT_EXIST_CAT   = 10002
 	ERROR_NOT_EXIST_WORKS = 10003
 	ERROR_EXIST_WORKS     = 10004
@@ -46,7 +45,7 @@ var MsgFlags = map[int]string{
 	ERROR:                           "fail",
 	INVALID_PARAMS:                  "请求参数错误",
 	ERROR_LOGIN_PARAMS:              "用户名或密码错误",
-	ERROR_EXIST_CAT:                 "已存在该分类名称",
+	ERROR_LOGIN_FAIL:                "登录失败，请重试",
 	ERROR_NOT_EXIST_CAT:             "该分类不存在",
 	ERROR_NOT_EXIST_WORKS:           "该作品不存在",
 	ERROR_NOT_EXIST:                 "数据不存在",
@@ -60,7 +59,7 @@ var MsgFlags = map[int]string{
 	ERROR_AUTH_CHECK_TOKEN_TIMEOUT:  "Token已超时",
 	ERROR_AUTH_TOKEN:                "Token生成失败",
 	ERROR_AUTH:                      "Token错误",
-	ERROR_TOKEN_NOT_EXIST:           "缺少用户验证参数",
+	ERROR_TOKEN_NOT_EXIST:           "请登录后操作",
 	ERROR_UPLOAD_SAVE_IMAGE_FAIL:    "保存图片失败",
 	ERROR_UPLOAD_CHECK_IMAGE_FAIL:   "检查图片失败",
 	ERROR_UPLOAD_CHECK_IMAGE_FORMAT: "校验图片错误，图片格式或大小有问题",

@@ -29,7 +29,6 @@ var orderMap = map[string]string{
 
 //获取多个作品
 func (api *WorksApi) GetWorks(c *gin.Context) {
-	appG := app.Gin{C: c}
 	var (
 		orderString string
 		worksData   service.Works
@@ -54,7 +53,7 @@ func (api *WorksApi) GetWorks(c *gin.Context) {
 
 	total, err := api.worksService.Count(&worksData)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
 		return
 	}
 
@@ -64,7 +63,7 @@ func (api *WorksApi) GetWorks(c *gin.Context) {
 
 	works, err := api.worksService.GetAll(&worksData)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil)
 		return
 	}
 
@@ -72,11 +71,10 @@ func (api *WorksApi) GetWorks(c *gin.Context) {
 	data["lists"] = works
 	data["total"] = total
 
-	appG.Response(http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data)
 }
 
 func (api *WorksApi) GetOneWorks(c *gin.Context) {
-	appG := app.Gin{C: c}
 	id := com.StrTo(c.Param("id")).MustInt()
 
 	valid := validation.Validation{}
@@ -84,28 +82,28 @@ func (api *WorksApi) GetOneWorks(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		appG.Response(http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
 		return
 	}
 
 	exists, err := api.worksService.ExistByID(id)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_CHECK_EXIST_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_CHECK_EXIST_WORKS_FAIL, nil)
 		return
 	}
 	if !exists {
-		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_WORKS, nil)
-		return
-	}
-
-	works, err := api.worksService.Get(id)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil)
+		app.Response(c, http.StatusOK, e.ERROR_NOT_EXIST_WORKS, nil)
 		return
 	}
 
 	// 获取用户信息
 	userId := (c.MustGet("userId")).(int)
+	works, err := api.worksService.Get(id, userId)
+	if err != nil {
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil)
+		return
+	}
+
 	// 更新查看数
 	viewData := service.Viewer{}
 	viewData.UserId = userId
@@ -113,19 +111,18 @@ func (api *WorksApi) GetOneWorks(c *gin.Context) {
 
 	_ = api.viewService.Add(&viewData)
 
-	appG.Response(http.StatusOK, e.SUCCESS, works)
+	app.Response(c, http.StatusOK, e.SUCCESS, works)
 }
 
 // AddWorks 新增文章作品
 func (api *WorksApi) AddWorks(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
 		form request.AddWorksForm
 	)
 
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		appG.Response(httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil)
 		return
 	}
 	// 获取用户信息
@@ -135,7 +132,7 @@ func (api *WorksApi) AddWorks(c *gin.Context) {
 	worksData := service.Works{}
 	worksData.WorksName = form.WorksName
 	worksData.UserId = userInfo.UserId
-	worksData.Username = userInfo.Username
+	worksData.Username = userInfo.Nickname
 	worksData.State = form.State
 	worksData.CatId = form.CatId
 	worksData.WorksLink = form.WorksLink
@@ -145,23 +142,22 @@ func (api *WorksApi) AddWorks(c *gin.Context) {
 	worksData.Remark = form.Remark
 
 	if err := api.worksService.Add(&worksData); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_WORKS_FAIL, nil)
 		return
 	}
 
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil)
 }
 
 // 修改文章作品
 func (api *WorksApi) EditWorks(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
 		form request.EditWorksForm
 	)
 
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		appG.Response(httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil)
 		return
 	}
 
@@ -178,51 +174,50 @@ func (api *WorksApi) EditWorks(c *gin.Context) {
 
 	exists, err := api.worksService.ExistByID(form.WorksId)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_CHECK_EXIST_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_CHECK_EXIST_WORKS_FAIL, nil)
 		return
 	}
 	if !exists {
-		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_WORKS, nil)
+		app.Response(c, http.StatusOK, e.ERROR_NOT_EXIST_WORKS, nil)
 		return
 	}
 
 	if err := api.worksService.Edit(&worksData); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_WORKS_FAIL, nil)
 		return
 	}
 
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil)
 }
 
 // 删除文章作品
 func (api *WorksApi) DeleteWorks(c *gin.Context) {
-	appG := app.Gin{C: c}
 	valid := validation.Validation{}
 	id := com.StrTo(c.Param("id")).MustInt()
 	valid.Min(id, 1, "id").Message("ID必须大于0")
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		appG.Response(http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
 		return
 	}
 	// 获取用户信息
 	userId := (c.MustGet("userId")).(int)
 	exists, err := api.worksService.ExistByID(id)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_CHECK_EXIST_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_CHECK_EXIST_WORKS_FAIL, nil)
 		return
 	}
 	if !exists {
-		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_WORKS, nil)
+		app.Response(c, http.StatusOK, e.ERROR_NOT_EXIST_WORKS, nil)
 		return
 	}
 
 	err = api.worksService.Delete(id, userId)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_WORKS_FAIL, nil)
 		return
 	}
 
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil)
 }

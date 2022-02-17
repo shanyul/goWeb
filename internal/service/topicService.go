@@ -10,8 +10,8 @@ type Topic struct {
 }
 
 type TopicService struct {
-	TopicModel   models.TopicModel
-	WorksService WorksService
+	TopicModel models.TopicModel
+	WorksModel models.WorksModel
 }
 
 func (service *TopicService) Add(topic *Topic) error {
@@ -27,7 +27,7 @@ func (service *TopicService) Add(topic *Topic) error {
 	}
 
 	field := "topic_num"
-	_ = service.WorksService.Increment(topic.WorksId, field)
+	_ = service.WorksModel.Increment(topic.WorksId, field)
 
 	return nil
 }
@@ -63,7 +63,7 @@ func (service *TopicService) Delete(topicId int, userId int) error {
 
 		// 扣减评论数
 		field := "topic_num"
-		_ = service.WorksService.Decrement(topicData.WorksId, field)
+		_ = service.WorksModel.Decrement(topicData.WorksId, field)
 	}
 
 	return nil

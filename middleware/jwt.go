@@ -12,12 +12,13 @@ import (
 
 func JWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		appG := app.Gin{C: c}
-		var code int
-		var data interface{}
+		var (
+			data   interface{}
+			code   = e.SUCCESS
+			userId = 0
+			token  = c.GetHeader("token")
+		)
 
-		code = e.SUCCESS
-		token := c.GetHeader("token")
 		if token == "" {
 			code = e.ERROR_TOKEN_NOT_EXIST
 		} else {
@@ -29,15 +30,17 @@ func JWT() gin.HandlerFunc {
 			}
 
 			if code == e.SUCCESS {
-				c.Set("userId", claims.UsesId)
+				userId = claims.UsesId
 			}
 		}
 
-		if code != e.SUCCESS {
-			appG.Response(http.StatusUnauthorized, code, data)
+		if code != e.SUCCESS || userId == 0 {
+			app.Response(c, http.StatusUnauthorized, code, data)
 			c.Abort()
 			return
 		}
+		// 设置登录用户Id
+		c.Set("userId", userId)
 
 		c.Next()
 	}
@@ -45,7 +48,6 @@ func JWT() gin.HandlerFunc {
 
 func Refresh() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		appG := app.Gin{C: c}
 		var code int
 		var data interface{}
 
@@ -63,7 +65,7 @@ func Refresh() gin.HandlerFunc {
 		}
 
 		if code != e.SUCCESS {
-			appG.Response(http.StatusUnauthorized, code, data)
+			app.Response(c, http.StatusUnauthorized, code, data)
 			c.Abort()
 			return
 		}

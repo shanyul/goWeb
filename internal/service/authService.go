@@ -22,11 +22,19 @@ type User struct {
 
 const prefixLoginKey = "key_user_login"
 
-func (service *UserService) GetUserInfo(id int) User {
+func (service *UserService) GetUserInfo(id int) (userInfo models.User) {
 	key := fmt.Sprintf("%s:%d", prefixLoginKey, id)
-	cacheData, _ := gredis.Get(key)
-	var userInfo User
-	_ = json.Unmarshal(cacheData, &userInfo)
+	cacheData, err := gredis.Get(key)
+	if cacheData != nil && err == nil {
+		_ = json.Unmarshal(cacheData, &userInfo)
+	}
+
+	// 缓存不存在取数据库
+	if userInfo.UserId == 0 {
+		userInfo, _ = service.UserModel.GetByUserId(id)
+		_, _ = service.saveUser(userInfo)
+	}
+	userInfo.Password = "*"
 
 	return userInfo
 }
@@ -65,32 +73,45 @@ func (service *UserService) CheckUser(a *User) (info map[string]interface{}, cod
 	token, err := util.GenerateToken(authInfo.UserId)
 	if err != nil {
 		code = e.ERROR_AUTH_TOKEN
-	} else {
-		info = make(map[string]interface{})
-		info["userId"] = authInfo.UserId
-		info["username"] = authInfo.Username
-		info["nickname"] = authInfo.Nickname
-		info["avatar"] = authInfo.Avatar
-		info["bgImage"] = authInfo.BgImage
-		info["phone"] = authInfo.Phone
-		info["email"] = authInfo.Email
-		info["state"] = authInfo.State
-		info["province"] = authInfo.Province
-		info["city"] = authInfo.City
-		info["distinct"] = authInfo.Distinct
-		info["address"] = authInfo.Address
-		info["createTime"] = authInfo.CreateTime
-		info["token"] = token
-
-		// 保存用户信息
-		key := fmt.Sprintf("%s:%d", prefixLoginKey, authInfo.UserId)
-		ttl := 60 * 60 * 24
-		_ = gredis.Set(key, info, ttl)
-
-		code = e.SUCCESS
+		return
 	}
 
+	info, err = service.saveUser(authInfo)
+	if err != nil {
+		code = e.ERROR_LOGIN_FAIL
+		return
+	}
+	info["token"] = token
+
 	return
+}
+
+func (service *UserService) saveUser(authInfo models.User) (map[string]interface{}, error) {
+	info := make(map[string]interface{})
+
+	info["userId"] = authInfo.UserId
+	info["username"] = authInfo.Username
+	info["nickname"] = authInfo.Nickname
+	info["avatar"] = authInfo.Avatar
+	info["bgImage"] = authInfo.BgImage
+	info["phone"] = authInfo.Phone
+	info["email"] = authInfo.Email
+	info["state"] = authInfo.State
+	info["province"] = authInfo.Province
+	info["city"] = authInfo.City
+	info["distinct"] = authInfo.Distinct
+	info["address"] = authInfo.Address
+	info["createTime"] = authInfo.CreateTime
+
+	// 保存用户信息
+	key := fmt.Sprintf("%s:%d", prefixLoginKey, authInfo.UserId)
+	ttl := 60 * 60 * 2
+	err := gredis.Set(key, info, ttl)
+
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 func (service *UserService) Edit(u User) error {

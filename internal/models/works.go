@@ -47,18 +47,18 @@ func (*WorksModel) GetWorks(pageNum int, pageSize int, maps interface{}, orderBy
 	return works, nil
 }
 
-func (*WorksModel) GetOneWorks(id int) (*Works, error) {
-	var works Works
+func (*WorksModel) GetOneWorks(id int) (Works, error) {
+	works := Works{}
 	err := dbHandle.Where("works_id = ?", id).First(&works).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
+		return works, err
 	}
 	err = dbHandle.Model(&works).Association("Category").Find(&works.Category)
 	if err != nil {
-		return nil, err
+		return works, err
 	}
 
-	return &works, nil
+	return works, nil
 }
 
 func (*WorksModel) GetWorksTotal(maps interface{}) (int64, error) {

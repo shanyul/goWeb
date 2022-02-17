@@ -13,16 +13,15 @@ import (
 type UploadApi struct{}
 
 func (api *UploadApi) UploadImage(c *gin.Context) {
-	appG := app.Gin{C: c}
 	file, image, err := c.Request.FormFile("image")
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_FILE_NOT_INPUT, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_UPLOAD_FILE_NOT_INPUT, nil)
 		return
 	}
 
 	if image == nil {
-		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusBadRequest, e.INVALID_PARAMS, nil)
 		return
 	}
 
@@ -32,24 +31,24 @@ func (api *UploadApi) UploadImage(c *gin.Context) {
 	src := fullPath + imageName
 
 	if !upload.CheckImageExt(imageName) || !upload.CheckImageSize(file) {
-		appG.Response(http.StatusBadRequest, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
+		app.Response(c, http.StatusBadRequest, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
 		return
 	}
 
 	err = upload.CheckImage(fullPath)
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_CHECK_IMAGE_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_UPLOAD_CHECK_IMAGE_FAIL, nil)
 		return
 	}
 
 	if err := c.SaveUploadedFile(image, src); err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, nil)
 		return
 	}
 
-	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
+	app.Response(c, http.StatusOK, e.SUCCESS, map[string]string{
 		"url":     upload.GetImageFullUrl(imageName),
 		"saveUrl": savePath + imageName,
 	})

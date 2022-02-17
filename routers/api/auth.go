@@ -7,6 +7,7 @@ import (
 	"designer-api/pkg/e"
 	"designer-api/pkg/util"
 	"github.com/gin-gonic/gin"
+	"github.com/unknwon/com"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strings"
@@ -17,14 +18,10 @@ type UserApi struct {
 }
 
 func (api *UserApi) Login(c *gin.Context) {
-	var (
-		appG = app.Gin{C: c}
-		form request.LoginUserForm
-	)
-
+	var form request.LoginUserForm
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		appG.Response(httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil)
 		return
 	}
 
@@ -34,37 +31,36 @@ func (api *UserApi) Login(c *gin.Context) {
 
 	data, code := api.userService.CheckUser(&loginData)
 
-	appG.Response(http.StatusOK, code, data)
+	app.Response(c, http.StatusOK, code, data)
 }
 
 func (api *UserApi) Register(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
 		form request.RegisterUserForm
 	)
 
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		appG.Response(httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil)
 		return
 	}
 
 	code := e.INVALID_PARAMS
 	if strings.Compare(form.Password, form.ConfirmPassword) != 0 {
 		code = e.ERROR_CONFIRM_PASSWORD_NOT_EQ
-		appG.Response(http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil)
 		return
 	}
 	if exist, _ := api.userService.ExistNickname(form.Nickname); exist {
 		code = e.ERROR_USER_NICKNAME_EXIST
-		appG.Response(http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil)
 		return
 	}
 
 	hashPwd, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.MinCost)
 	if err != nil {
 		code = e.ERROR_GENERATE_PASSWORD
-		appG.Response(http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil)
 		return
 	}
 
@@ -75,43 +71,41 @@ func (api *UserApi) Register(c *gin.Context) {
 
 	if err := api.userService.AddUser(&authData); err != nil {
 		code = e.ERROR_REGISTER_FAIL
-		appG.Response(http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil)
 		return
 	}
 
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil)
 }
 
 func (api *UserApi) RefreshToken(c *gin.Context) {
 	token := c.GetHeader("token")
 	code := e.ERROR_TOKEN_NOT_EXIST
-	appG := app.Gin{C: c}
 	data := make(map[string]interface{})
 	if token == "" {
-		appG.Response(http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil)
 		return
 	}
 
 	newToken, err := util.RefreshToken(token)
 	if err != nil {
 		code = e.ERROR_AUTH
-		appG.Response(http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil)
 		return
 	}
 	data["token"] = newToken
-	appG.Response(http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data)
 }
 
 // 修改用户信息
 func (api *UserApi) EditUser(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
 		form = request.EditUserForm{}
 	)
 
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		appG.Response(httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil)
 		return
 	}
 
@@ -132,9 +126,15 @@ func (api *UserApi) EditUser(c *gin.Context) {
 
 	err := api.userService.Edit(userData)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil)
 		return
 	}
 
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+}
+
+func (api *UserApi) GetUserInfo(c *gin.Context) {
+	id := com.StrTo(c.Param("id")).MustInt()
+	userInfo := api.userService.GetUserInfo(id)
+	app.Response(c, http.StatusOK, e.SUCCESS, userInfo)
 }

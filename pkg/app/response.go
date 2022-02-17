@@ -5,19 +5,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Gin struct {
-	C *gin.Context
-}
-
-type Response struct {
+type ResponseForm struct {
 	Code int         `json:"code"`
 	Msg  string      `json:"msg"`
 	Data interface{} `json:"data"`
 }
 
 // Response setting gin.JSON
-func (g *Gin) Response(httpCode, errCode int, data interface{}) {
-	g.C.JSON(httpCode, Response{
+func Response(ctx *gin.Context, httpCode, errCode int, data interface{}) {
+	ctx.JSON(httpCode, ResponseForm{
 		Code: errCode,
 		Msg:  e.GetMsg(errCode),
 		Data: data,

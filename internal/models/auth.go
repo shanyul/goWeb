@@ -55,16 +55,28 @@ func (*UserModel) ExistNickname(name string) (bool, error) {
 }
 
 // 判断昵称是否存在
-func (*UserModel) GetByNickname(name string) (*User, error) {
+func (*UserModel) GetByNickname(name string) (User, error) {
 	var user User
 	err := dbHandle.Select(
 		"user_id", "username", "nickname", "password", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
 	).Where("nickname = ?", name).First(&user).Error
 	if err != nil {
-		return nil, err
+		return User{}, err
 	}
 
-	return &user, nil
+	return user, nil
+}
+
+func (*UserModel) GetByUserId(id int) (User, error) {
+	var user User
+	err := dbHandle.Select(
+		"user_id", "username", "nickname", "password", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
+	).Where("user_id = ?", id).First(&user).Error
+	if err != nil {
+		return User{}, err
+	}
+
+	return user, nil
 }
 
 // AddUser 验证用户

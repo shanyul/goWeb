@@ -2,18 +2,21 @@ package service
 
 import (
 	"designer-api/internal/models"
+	"encoding/json"
 )
 
 type WorksService struct {
-	WorksModel models.WorksModel
+	WorksModel    models.WorksModel
+	FavoriteModel models.FavoriteModel
 }
 
 type Works struct {
 	models.Works
 
-	OrderBy  string
-	PageNum  int
-	PageSize int
+	OrderBy    string
+	IsFavorite int
+	PageNum    int
+	PageSize   int
 }
 
 func (service *WorksService) ExistByName(worksName string) (bool, error) {
@@ -68,13 +71,25 @@ func (service *WorksService) GetAll(w *Works) ([]models.Works, error) {
 	return data, nil
 }
 
-func (service *WorksService) Get(worksId int) (*models.Works, error) {
+func (service *WorksService) Get(worksId int, userId int) (map[string]interface{}, error) {
+	var mapData map[string]interface{}
 	works, err := service.WorksModel.GetOneWorks(worksId)
 	if err != nil {
-		return nil, err
+		return mapData, err
 	}
 
-	return works, nil
+	data, _ := json.Marshal(&works)
+	_ = json.Unmarshal(data, &mapData)
+
+	mapData["isFavorite"] = 0
+	if userId > 0 && works.WorksId > 0 {
+		isFavorite := service.FavoriteModel.IsFavorite(userId, worksId)
+		if isFavorite {
+			mapData["isFavorite"] = 1
+		}
+	}
+
+	return mapData, nil
 }
 
 func (service *WorksService) Delete(worksId int, userId int) error {
