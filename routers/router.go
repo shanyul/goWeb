@@ -19,6 +19,8 @@ func InitRouter() *gin.Engine {
 	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 	r.POST("/auth/login", baseApi.UserApi.Login)
 	r.POST("/auth/register", baseApi.UserApi.Register)
+	r.GET("/captcha", baseApi.CaptchaApi.Get)
+	r.GET("/captcha/show/:image", baseApi.CaptchaApi.Show)
 	r.GET("/auth/:id", middleware.JWT(), baseApi.UserApi.GetUserInfo)
 	r.PUT("/auth/edit", middleware.JWT(), baseApi.UserApi.EditUser)
 	r.GET("/refresh-token", middleware.JWT(), baseApi.UserApi.RefreshToken)
@@ -46,6 +48,18 @@ func InitRouter() *gin.Engine {
 		apiHandle.GET("/favorite", baseApi.FavoriteApi.GetFavorite)
 		apiHandle.POST("/favorite", baseApi.FavoriteApi.AddFavorite)
 		apiHandle.DELETE("/favorite/:id", baseApi.FavoriteApi.DeleteFavorite)
+		// 用户类别
+		apiHandle.GET("/user-category", baseApi.userCategoryApi.GetUserCategory)
+		apiHandle.GET("/user-category/:id", baseApi.userCategoryApi.GetOneCategory)
+		apiHandle.POST("/user-category", baseApi.userCategoryApi.AddCategory)
+		apiHandle.PUT("/user-category", baseApi.userCategoryApi.EditCategory)
+		apiHandle.DELETE("/user-category/:id", baseApi.userCategoryApi.DeleteCategory)
+		// 素材
+		apiHandle.GET("/source", baseApi.sourceApi.GetSource)
+		apiHandle.GET("/source/:id", baseApi.sourceApi.GetOneSource)
+		apiHandle.POST("/source", baseApi.sourceApi.AddSource)
+		apiHandle.PUT("/source", baseApi.sourceApi.EditSource)
+		apiHandle.DELETE("/source/:id", baseApi.sourceApi.DeleteSource)
 	}
 
 	return r

@@ -14,7 +14,8 @@ import (
 )
 
 type UserApi struct {
-	userService service.UserService
+	userService    service.UserService
+	captchaService service.CaptchaService
 }
 
 func (api *UserApi) Login(c *gin.Context) {
@@ -22,6 +23,11 @@ func (api *UserApi) Login(c *gin.Context) {
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		app.Response(c, httpCode, errCode, nil)
+		return
+	}
+	checkCaptcha := api.captchaService.Verify(form.CaptchaId, form.Captcha)
+	if !checkCaptcha {
+		app.Response(c, httpCode, e.ERROR_CHECK_CAPTCHA_FAIL, nil)
 		return
 	}
 
@@ -42,6 +48,12 @@ func (api *UserApi) Register(c *gin.Context) {
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		app.Response(c, httpCode, errCode, nil)
+		return
+	}
+
+	checkCaptcha := api.captchaService.Verify(form.CaptchaId, form.Captcha)
+	if !checkCaptcha {
+		app.Response(c, httpCode, e.ERROR_CHECK_CAPTCHA_FAIL, nil)
 		return
 	}
 

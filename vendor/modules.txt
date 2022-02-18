@@ -2,6 +2,9 @@
 ## explicit
 github.com/astaxie/beego/logs
 github.com/astaxie/beego/validation
+# github.com/dchest/captcha v0.0.0-20200903113550-03f5f0333e1f
+## explicit
+github.com/dchest/captcha
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
 github.com/dgrijalva/jwt-go

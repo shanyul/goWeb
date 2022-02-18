@@ -9,7 +9,7 @@ import (
 type WorksModel struct{}
 
 type Works struct {
-	CatId    int      `json:"cat_id"`
+	CatId    int      `column:"cat_id" json:"catId"`
 	Category Category `gorm:"foreignKey:cat_id" json:"category"`
 
 	WorksId          int    `gorm:"primary_key" column:"works_id" json:"worksId"`
