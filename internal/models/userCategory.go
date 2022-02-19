@@ -11,7 +11,7 @@ type UserCategory struct {
 	UcatId          int    `gorm:"primary_key" column:"ucat_id" json:"ucatId"`
 	UcatName        string `column:"ucat_name" json:"ucatName"`
 	UserId          int    `column:"user_id" json:"userId"`
-	Username        string `column:"user_name" json:"userName"`
+	Username        string `column:"user_name" json:"username"`
 	CreateTime      string `column:"create_time" json:"createTime"`
 	UpdateTime      string `column:"update_time" json:"updateTime"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
@@ -61,7 +61,7 @@ func (*UserCategoryModel) AddCategory(category *UserCategory) error {
 	if err := dbHandle.Select(
 		"UcatName",
 		"UserId",
-		"UserName",
+		"Username",
 	).Create(&category).Error; err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (*UserCategoryModel) EditCategory(id int, category *UserCategory) error {
 func (*UserCategoryModel) DeleteCategory(id int, userId int) error {
 	maps := make(map[string]interface{})
 	maps["delete_timestamp"] = time.Now().Unix()
-	if err := dbHandle.Model(&Category{}).Select("delete_timestamp").Where("ucat_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {
+	if err := dbHandle.Model(&UserCategory{}).Select("delete_timestamp").Where("ucat_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {
 		return err
 	}
 
@@ -90,7 +90,7 @@ func (*UserCategoryModel) DeleteCategory(id int, userId int) error {
 // 获取总记录数
 func (*UserCategoryModel) GetCategoryTotal(maps interface{}) (int64, error) {
 	var count int64
-	if err := dbHandle.Model(&UserCategory{}).Where(maps).Count(&count).Error; err != nil {
+	if err := dbHandle.Model(&UserCategory{}).Where(maps).Count(&count).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return 0, err
 	}
 

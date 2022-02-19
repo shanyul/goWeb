@@ -46,7 +46,7 @@ func (*UserModel) CheckAuth(username, password string) (*User, bool) {
 // 判断昵称是否存在
 func (*UserModel) ExistNickname(name string) (bool, error) {
 	var user User
-	err := dbHandle.Select("user_id").Where("nickname = ?", name).First(&user).Error
+	err := dbHandle.Select("user_id").Where("username = ?", name).First(&user).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false, err
 	}
@@ -59,7 +59,7 @@ func (*UserModel) GetByNickname(name string) (User, error) {
 	var user User
 	err := dbHandle.Select(
 		"user_id", "username", "nickname", "password", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
-	).Where("nickname = ?", name).First(&user).Error
+	).Where("username = ?", name).First(&user).Error
 	if err != nil {
 		return User{}, err
 	}

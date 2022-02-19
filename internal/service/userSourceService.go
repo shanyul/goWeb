@@ -24,6 +24,7 @@ func (service *UserSourceService) Add(source *UserSource) error {
 	sourceData.UcatName = source.UcatName
 	sourceData.Description = source.Description
 	sourceData.Title = source.Title
+	sourceData.Link = source.Link
 
 	if err := service.SourceModel.AddSource(&sourceData); err != nil {
 		return err

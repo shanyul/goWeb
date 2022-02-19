@@ -13,7 +13,7 @@ type Source struct {
 
 	SourceId        int    `gorm:"primary_key" column:"source_id" json:"sourceId"`
 	UserId          int    `column:"user_id" json:"userId"`
-	Username        string `column:"user_name" json:"userName"`
+	Username        string `column:"user_name" json:"username"`
 	UcatName        string `column:"ucat_name" json:"ucatName"`
 	Description     string `column:"description" json:"description"`
 	Link            string `column:"link" json:"link"`
@@ -61,11 +61,12 @@ func (*UserSourceModel) GetSource(id int) (Source, error) {
 func (*UserSourceModel) AddSource(source *Source) error {
 	if err := dbHandle.Select(
 		"UserId",
-		"UserName",
+		"Username",
 		"UcatId",
 		"UcatName",
 		"Description",
 		"Title",
+		"Link",
 	).Create(&source).Error; err != nil {
 		return err
 	}
@@ -94,7 +95,7 @@ func (*UserSourceModel) DeleteSource(id int, userId int) error {
 // 获取总记录数
 func (*UserSourceModel) GetSourceTotal(maps interface{}) (int64, error) {
 	var count int64
-	if err := dbHandle.Model(&Source{}).Where(maps).Count(&count).Error; err != nil {
+	if err := dbHandle.Model(&Source{}).Where(maps).Count(&count).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return 0, err
 	}
 

@@ -12,4 +12,5 @@ type ApiCommon struct {
 	CaptchaApi      api.CaptchaApi
 	userCategoryApi api.UserCategoryApi
 	sourceApi       api.SourceApi
+	configApi       api.ConfigApi
 }

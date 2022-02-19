@@ -39,8 +39,8 @@ func (service *UserService) GetUserInfo(id int) (userInfo models.User) {
 	return userInfo
 }
 
-func (service *UserService) ExistNickname(nickname string) (bool, error) {
-	return service.UserModel.ExistNickname(nickname)
+func (service *UserService) ExistNickname(username string) (bool, error) {
+	return service.UserModel.ExistNickname(username)
 }
 
 func (service *UserService) AddUser(a *User) error {
@@ -57,7 +57,7 @@ func (service *UserService) AddUser(a *User) error {
 }
 
 func (service *UserService) CheckUser(a *User) (info map[string]interface{}, code int) {
-	authInfo, err := service.UserModel.GetByNickname(a.Nickname)
+	authInfo, err := service.UserModel.GetByNickname(a.Username)
 	code = e.SUCCESS
 	if err != nil {
 		code = e.ERROR_LOGIN_PARAMS
@@ -129,6 +129,10 @@ func (service *UserService) Edit(u User) error {
 	if err := service.UserModel.EditUser(u.UserId, user); err != nil {
 		return err
 	}
+
+	// 更新缓存信息
+	userInfo, _ := service.UserModel.GetByUserId(u.UserId)
+	_, _ = service.saveUser(userInfo)
 
 	return nil
 }

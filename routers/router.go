@@ -60,6 +60,12 @@ func InitRouter() *gin.Engine {
 		apiHandle.POST("/source", baseApi.sourceApi.AddSource)
 		apiHandle.PUT("/source", baseApi.sourceApi.EditSource)
 		apiHandle.DELETE("/source/:id", baseApi.sourceApi.DeleteSource)
+		// 配置
+		apiHandle.GET("/config", baseApi.configApi.GetList)
+		apiHandle.GET("/config/:key", baseApi.configApi.GetOne)
+		apiHandle.POST("/config", baseApi.configApi.AddConfig)
+		apiHandle.PUT("/config", baseApi.configApi.EditConfig)
+		apiHandle.DELETE("/config/:id", baseApi.configApi.DeleteConfig)
 	}
 
 	return r

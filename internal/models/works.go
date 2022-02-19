@@ -63,7 +63,7 @@ func (*WorksModel) GetOneWorks(id int) (Works, error) {
 
 func (*WorksModel) GetWorksTotal(maps interface{}) (int64, error) {
 	var count int64
-	if err := dbHandle.Model(&Works{}).Where(maps).Count(&count).Error; err != nil {
+	if err := dbHandle.Model(&Works{}).Where(maps).Count(&count).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return 0, err
 	}
 	return count, nil

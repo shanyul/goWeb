@@ -2,7 +2,7 @@ CREATE TABLE `user_category` (
   `ucat_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `ucat_name` varchar(255) NOT NULL DEFAULT '',
   `user_id` int(11) NOT NULL DEFAULT '0',
-  `user_name` varchar(255) NOT NULL,
+  `username` varchar(255) NOT NULL,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `delete_timestamp` int(11) NOT NULL DEFAULT '0',
@@ -12,7 +12,7 @@ CREATE TABLE `user_category` (
 CREATE TABLE `user_source` (
   `source_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL DEFAULT '0',
-  `user_name` varchar(255) NOT NULL DEFAULT '',
+  `username` varchar(255) NOT NULL DEFAULT '',
   `ucat_id` int(11) NOT NULL DEFAULT '0',
   `ucat_name` varchar(255) NOT NULL DEFAULT '',
   `description` varchar(1000) NOT NULL DEFAULT '',

@@ -88,7 +88,7 @@ func (api *UserCategoryApi) AddCategory(c *gin.Context) {
 	userInfo := api.userService.GetUserInfo(id)
 
 	if exist, _ := api.userCategoryService.ExistByName(form.UcatName, id); exist {
-		app.Response(c, httpCode, e.ERROR_NOT_EXIST_CAT, nil)
+		app.Response(c, httpCode, e.ERROR_EXIST_FAIL, nil)
 		return
 	}
 

@@ -14,15 +14,15 @@ type EditUserForm struct {
 }
 
 type LoginUserForm struct {
-	Nickname  string `form:"nickname" valid:"Required; AlphaDash; MaxSize(20)"`
+	Username  string `form:"username" valid:"Required; AlphaDash; MaxSize(20)"`
 	Password  string `form:"password" valid:"Required; MaxSize(20)"`
 	Captcha   string `form:"captcha" valid:"Required"`
 	CaptchaId string `form:"captchaId" valid:"Required"`
 }
 
 type RegisterUserForm struct {
-	Username        string `form:"username" valid:"Required; MaxSize(20)"`
-	Nickname        string `form:"nickname" valid:"Required; AlphaDash; MaxSize(20)"`
+	Username        string `form:"username" valid:"Required; AlphaDash; MaxSize(20)"`
+	Nickname        string `form:"nickname" valid:"Required; MaxSize(20)"`
 	Password        string `form:"password" valid:"Required; MaxSize(20)"`
 	ConfirmPassword string `form:"confirmPassword" valid:"Required; MaxSize(20)"`
 	Captcha         string `form:"captcha" valid:"Required"`

@@ -32,7 +32,7 @@ func (api *UserApi) Login(c *gin.Context) {
 	}
 
 	loginData := service.User{}
-	loginData.Nickname = form.Nickname
+	loginData.Username = form.Username
 	loginData.Password = form.Password
 
 	data, code := api.userService.CheckUser(&loginData)
@@ -63,7 +63,7 @@ func (api *UserApi) Register(c *gin.Context) {
 		app.Response(c, http.StatusOK, code, nil)
 		return
 	}
-	if exist, _ := api.userService.ExistNickname(form.Nickname); exist {
+	if exist, _ := api.userService.ExistNickname(form.Username); exist {
 		code = e.ERROR_USER_NICKNAME_EXIST
 		app.Response(c, http.StatusOK, code, nil)
 		return
@@ -123,6 +123,7 @@ func (api *UserApi) EditUser(c *gin.Context) {
 
 	// 获取用户信息
 	id := (c.MustGet("userId")).(int)
+	userInfo := api.userService.GetUserInfo(id)
 
 	userData := service.User{}
 	userData.UserId = id
@@ -135,6 +136,13 @@ func (api *UserApi) EditUser(c *gin.Context) {
 	userData.Distinct = form.Distinct
 	userData.Address = form.Address
 	userData.Remark = form.Remark
+
+	if userInfo.Username != form.Username {
+		if exist, _ := api.userService.ExistNickname(form.Username); exist {
+			app.Response(c, http.StatusOK, e.ERROR_USER_NICKNAME_EXIST, nil)
+			return
+		}
+	}
 
 	err := api.userService.Edit(userData)
 	if err != nil {
