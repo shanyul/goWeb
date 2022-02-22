@@ -158,3 +158,26 @@ func (api *UserApi) GetUserInfo(c *gin.Context) {
 	userInfo := api.userService.GetUserInfo(id)
 	app.Response(c, http.StatusOK, e.SUCCESS, userInfo)
 }
+
+func (api *UserApi) ChangePassword(c *gin.Context) {
+	var (
+		form request.ChangePasswordForm
+	)
+
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		app.Response(c, httpCode, errCode, nil)
+		return
+	}
+
+	code := e.INVALID_PARAMS
+	if strings.Compare(form.Password, form.ConfirmPassword) != 0 {
+		code = e.ERROR_CONFIRM_PASSWORD_NOT_EQ
+		app.Response(c, http.StatusOK, code, nil)
+		return
+	}
+	// 获取用户信息
+	id := (c.MustGet("userId")).(int)
+	code = api.userService.ChangePassword(id, form.Password, form.OldPassword)
+	app.Response(c, http.StatusOK, code, nil)
+}

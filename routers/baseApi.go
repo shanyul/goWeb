@@ -13,4 +13,5 @@ type ApiCommon struct {
 	userCategoryApi api.UserCategoryApi
 	sourceApi       api.SourceApi
 	configApi       api.ConfigApi
+	wechatApi       api.WechatApi
 }

@@ -28,3 +28,9 @@ type RegisterUserForm struct {
 	Captcha         string `form:"captcha" valid:"Required"`
 	CaptchaId       string `form:"captchaId" valid:"Required"`
 }
+
+type ChangePasswordForm struct {
+	OldPassword     string `form:"oldPassword" valid:"Required; MaxSize(20)"`
+	Password        string `form:"password" valid:"Required; MaxSize(20)"`
+	ConfirmPassword string `form:"confirmPassword" valid:"Required; MaxSize(20)"`
+}

@@ -16,15 +16,25 @@ func InitRouter() *gin.Engine {
 
 	// 获取 API
 	baseApi := ApiCommon{}
+	// 文件处理
 	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
+	r.POST("/upload", middleware.JWT(), baseApi.UploadApi.UploadImage)
+	// 网页登录注册
 	r.POST("/auth/login", baseApi.UserApi.Login)
 	r.POST("/auth/register", baseApi.UserApi.Register)
+	// 网页微信扫码登录
+	r.GET("/wechat/web-login", baseApi.wechatApi.GetWechatLoginUrl)
+	r.GET("/wechat/web-callback", baseApi.wechatApi.WebCallback)
+	// 小程序登录
+	r.GET("/wechat/login", baseApi.wechatApi.Login)
+	// 验证码
 	r.GET("/captcha", baseApi.CaptchaApi.Get)
 	r.GET("/captcha/show/:image", baseApi.CaptchaApi.Show)
+	// 用户操作
 	r.GET("/auth/:id", middleware.JWT(), baseApi.UserApi.GetUserInfo)
 	r.PUT("/auth/edit", middleware.JWT(), baseApi.UserApi.EditUser)
+	r.PUT("/auth/change-password", middleware.JWT(), baseApi.UserApi.ChangePassword)
 	r.GET("/refresh-token", middleware.JWT(), baseApi.UserApi.RefreshToken)
-	r.POST("/upload", middleware.JWT(), baseApi.UploadApi.UploadImage)
 
 	apiHandle := r.Group("/api")
 	apiHandle.Use(middleware.JWT())

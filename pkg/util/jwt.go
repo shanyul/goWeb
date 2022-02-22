@@ -17,14 +17,19 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func GenerateToken(userId int) (string, error) {
+func GenerateToken(userId int, expire time.Duration) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(TokenExpireDuration)
+	var expireTime int64
+	if expire > 0 {
+		expireTime = nowTime.Add(expire).Unix()
+	} else {
+		expireTime = nowTime.Add(TokenExpireDuration).Unix()
+	}
 
 	claims := Claims{
 		userId,
 		jwt.StandardClaims{
-			ExpiresAt: expireTime.Unix(),
+			ExpiresAt: expireTime,
 			Issuer:    "designer",
 		},
 	}
@@ -41,7 +46,7 @@ func RefreshToken(token string) (string, error) {
 		return "", err
 	}
 
-	return GenerateToken(claims.UsesId)
+	return GenerateToken(claims.UsesId, 0)
 }
 
 func ParseToken(token string) (*Claims, error) {

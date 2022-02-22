@@ -20,6 +20,8 @@ type User struct {
 	Address         string `column:"address" json:"address"`
 	Remark          string `column:"remark" json:"remark"`
 	WechatOpenid    string `column:"wechat_openid" json:"wechatOpenid"`
+	UnionId         string `column:"union_id" json:"unionId"`
+	SessionKey      string `column:"session_key" json:"sessionKey"`
 	CreateTime      string `column:"create_time" json:"createTime"`
 	UpdateTime      string `column:"update_time" json:"updateTime"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
@@ -60,7 +62,7 @@ func (*UserModel) GetByNickname(name string) (User, error) {
 	err := dbHandle.Select(
 		"user_id", "username", "nickname", "password", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
 	).Where("username = ?", name).First(&user).Error
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return User{}, err
 	}
 
@@ -92,10 +94,36 @@ func (*UserModel) AddUser(data *User) error {
 	return nil
 }
 
+// AddUser 验证用户
+func (*UserModel) AddWechatUser(data *User) int {
+	if err := dbHandle.Select(
+		"wechat_openid",
+		"union_id",
+		"session_key",
+	).Create(&data).Error; err != nil {
+		return 0
+	}
+
+	return data.UserId
+}
+
 func (*UserModel) EditUser(id int, data User) error {
 	if err := dbHandle.Model(&User{}).Where("user_id = ?", id).Updates(data).Error; err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// GetByCode 通过 code 获取用户信息
+func (*UserModel) GetByCode(code string) (User, error) {
+	var user User
+	err := dbHandle.Select(
+		"user_id", "username", "nickname", "password", "avatar", "bg_image", "phone", "email", "state", "province", "city", "distinct", "address", "create_time",
+	).Where("wechat_openid = ?", code).First(&user).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return User{}, err
+	}
+
+	return user, nil
 }
