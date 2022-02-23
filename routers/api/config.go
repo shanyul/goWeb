@@ -25,13 +25,13 @@ func (api *ConfigApi) GetList(c *gin.Context) {
 
 	total, err := api.configService.Count(&configData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil, "")
 		return
 	}
 
 	works, err := api.configService.GetAll(&configData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil, "")
 		return
 	}
 
@@ -39,7 +39,7 @@ func (api *ConfigApi) GetList(c *gin.Context) {
 	data["lists"] = works
 	data["total"] = total
 
-	app.Response(c, http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }
 
 func (api *ConfigApi) GetOne(c *gin.Context) {
@@ -47,11 +47,11 @@ func (api *ConfigApi) GetOne(c *gin.Context) {
 	// 获取用户信息
 	config, err := api.configService.Get(key)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, config)
+	app.Response(c, http.StatusOK, e.SUCCESS, config, "")
 }
 
 func (api *ConfigApi) AddConfig(c *gin.Context) {
@@ -59,13 +59,13 @@ func (api *ConfigApi) AddConfig(c *gin.Context) {
 		form request.ConfigForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 	if exist, _ := api.configService.ExistByName(form.Key); exist {
-		app.Response(c, httpCode, e.ERROR_NOT_EXIST_CAT, nil)
+		app.Response(c, httpCode, e.ERROR_NOT_EXIST_CAT, nil, "")
 		return
 	}
 
@@ -74,11 +74,11 @@ func (api *ConfigApi) AddConfig(c *gin.Context) {
 	data.Value = form.Value
 
 	if err := api.configService.Add(&data); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 func (api *ConfigApi) EditConfig(c *gin.Context) {
@@ -86,9 +86,9 @@ func (api *ConfigApi) EditConfig(c *gin.Context) {
 		form request.ConfigForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 
@@ -97,11 +97,11 @@ func (api *ConfigApi) EditConfig(c *gin.Context) {
 	data.Value = form.Value
 
 	if err := api.configService.Edit(&data); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 func (api *ConfigApi) DeleteConfig(c *gin.Context) {
@@ -111,15 +111,15 @@ func (api *ConfigApi) DeleteConfig(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
 		return
 	}
 
 	err := api.configService.Delete(id)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }

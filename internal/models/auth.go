@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 type UserModel struct{}
 
 type User struct {
+	BaseModel
 	UserId          int    `gorm:"primary_key" column:"user_id" json:"userId"`
 	Username        string `column:"username" json:"username"`
 	Password        string `column:"password" json:"password"`
@@ -22,8 +23,6 @@ type User struct {
 	WechatOpenid    string `column:"wechat_openid" json:"wechatOpenid"`
 	UnionId         string `column:"union_id" json:"unionId"`
 	SessionKey      string `column:"session_key" json:"sessionKey"`
-	CreateTime      string `column:"create_time" json:"createTime"`
-	UpdateTime      string `column:"update_time" json:"updateTime"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 

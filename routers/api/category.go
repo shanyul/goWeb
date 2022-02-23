@@ -31,7 +31,7 @@ func (api *CategoryApi) GetCategory(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusBadRequest, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusBadRequest, e.INVALID_PARAMS, nil, "")
 		return
 	}
 
@@ -43,13 +43,13 @@ func (api *CategoryApi) GetCategory(c *gin.Context) {
 
 	total, err := api.categoryService.Count(&categoryData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil, "")
 		return
 	}
 
 	category, err := api.categoryService.GetAll(&categoryData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil, "")
 		return
 	}
 
@@ -57,7 +57,7 @@ func (api *CategoryApi) GetCategory(c *gin.Context) {
 	data["lists"] = category
 	data["total"] = total
 
-	app.Response(c, http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }
 
 //新增文章作品
@@ -66,9 +66,9 @@ func (api *CategoryApi) AddCategory(c *gin.Context) {
 		form request.AddCategoryForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 	categoryData := service.Category{}
@@ -76,11 +76,11 @@ func (api *CategoryApi) AddCategory(c *gin.Context) {
 	categoryData.ParentId = form.ParentId
 
 	if err := api.categoryService.Add(&categoryData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 //修改文章作品
@@ -89,9 +89,9 @@ func (api *CategoryApi) EditCategory(c *gin.Context) {
 		form = request.EditCategoryForm{CatId: com.StrTo(c.Param("id")).MustInt()}
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 	categoryData := service.Category{}
@@ -101,20 +101,20 @@ func (api *CategoryApi) EditCategory(c *gin.Context) {
 
 	exists, err := api.categoryService.ExistByID(form.CatId)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil, "")
 		return
 	}
 	if !exists {
-		app.Response(c, http.StatusOK, e.ERROR_NOT_EXIST, nil)
+		app.Response(c, http.StatusOK, e.ERROR_NOT_EXIST, nil, "")
 		return
 	}
 
 	if err := api.categoryService.Edit(&categoryData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 //删除文章作品
@@ -125,25 +125,25 @@ func (api *CategoryApi) DeleteCategory(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
 		return
 	}
 
 	exists, err := api.categoryService.ExistByID(id)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil, "")
 		return
 	}
 	if !exists {
-		app.Response(c, http.StatusOK, e.ERROR_NOT_EXIST, nil)
+		app.Response(c, http.StatusOK, e.ERROR_NOT_EXIST, nil, "")
 		return
 	}
 
 	err = api.categoryService.Delete(id)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }

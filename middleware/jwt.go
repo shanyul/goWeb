@@ -35,7 +35,7 @@ func JWT() gin.HandlerFunc {
 		}
 
 		if code != e.SUCCESS || userId == 0 {
-			app.Response(c, http.StatusUnauthorized, code, data)
+			app.Response(c, http.StatusUnauthorized, code, data, "")
 			c.Abort()
 			return
 		}
@@ -65,7 +65,7 @@ func Refresh() gin.HandlerFunc {
 		}
 
 		if code != e.SUCCESS {
-			app.Response(c, http.StatusUnauthorized, code, data)
+			app.Response(c, http.StatusUnauthorized, code, data, "")
 			c.Abort()
 			return
 		}

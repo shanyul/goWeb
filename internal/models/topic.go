@@ -8,13 +8,13 @@ import (
 type TopicModel struct{}
 
 type Topic struct {
+	BaseModel
 	TopicId         int    `gorm:"primary_key" column:"topic_id" json:"topicId"`
 	UserId          int    `column:"user_id" json:"userId"`
 	Username        string `column:"username" json:"username"`
 	WorksId         int    `column:"works_id" json:"worksId"`
 	Content         string `column:"content" json:"content"`
 	RelationId      int    `column:"relation_id" json:"relationId"`
-	CreateTime      string `column:"create_time" json:"createTime"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 

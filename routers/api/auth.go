@@ -20,14 +20,14 @@ type UserApi struct {
 
 func (api *UserApi) Login(c *gin.Context) {
 	var form request.LoginUserForm
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 	checkCaptcha := api.captchaService.Verify(form.CaptchaId, form.Captcha)
 	if !checkCaptcha {
-		app.Response(c, httpCode, e.ERROR_CHECK_CAPTCHA_FAIL, nil)
+		app.Response(c, httpCode, e.ERROR_CHECK_CAPTCHA_FAIL, nil, "")
 		return
 	}
 
@@ -37,7 +37,7 @@ func (api *UserApi) Login(c *gin.Context) {
 
 	data, code := api.userService.CheckUser(&loginData)
 
-	app.Response(c, http.StatusOK, code, data)
+	app.Response(c, http.StatusOK, code, data, "")
 }
 
 func (api *UserApi) Register(c *gin.Context) {
@@ -45,34 +45,34 @@ func (api *UserApi) Register(c *gin.Context) {
 		form request.RegisterUserForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 
 	checkCaptcha := api.captchaService.Verify(form.CaptchaId, form.Captcha)
 	if !checkCaptcha {
-		app.Response(c, httpCode, e.ERROR_CHECK_CAPTCHA_FAIL, nil)
+		app.Response(c, httpCode, e.ERROR_CHECK_CAPTCHA_FAIL, nil, "")
 		return
 	}
 
 	code := e.INVALID_PARAMS
 	if strings.Compare(form.Password, form.ConfirmPassword) != 0 {
 		code = e.ERROR_CONFIRM_PASSWORD_NOT_EQ
-		app.Response(c, http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil, "")
 		return
 	}
 	if exist, _ := api.userService.ExistNickname(form.Username); exist {
 		code = e.ERROR_USER_NICKNAME_EXIST
-		app.Response(c, http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil, "")
 		return
 	}
 
 	hashPwd, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.MinCost)
 	if err != nil {
 		code = e.ERROR_GENERATE_PASSWORD
-		app.Response(c, http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil, "")
 		return
 	}
 
@@ -83,11 +83,11 @@ func (api *UserApi) Register(c *gin.Context) {
 
 	if err := api.userService.AddUser(&authData); err != nil {
 		code = e.ERROR_REGISTER_FAIL
-		app.Response(c, http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 func (api *UserApi) RefreshToken(c *gin.Context) {
@@ -95,18 +95,18 @@ func (api *UserApi) RefreshToken(c *gin.Context) {
 	code := e.ERROR_TOKEN_NOT_EXIST
 	data := make(map[string]interface{})
 	if token == "" {
-		app.Response(c, http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil, "")
 		return
 	}
 
 	newToken, err := util.RefreshToken(token)
 	if err != nil {
 		code = e.ERROR_AUTH
-		app.Response(c, http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil, "")
 		return
 	}
 	data["token"] = newToken
-	app.Response(c, http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }
 
 // 修改用户信息
@@ -115,9 +115,9 @@ func (api *UserApi) EditUser(c *gin.Context) {
 		form = request.EditUserForm{}
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 
@@ -139,24 +139,24 @@ func (api *UserApi) EditUser(c *gin.Context) {
 
 	if userInfo.Username != form.Username {
 		if exist, _ := api.userService.ExistNickname(form.Username); exist {
-			app.Response(c, http.StatusOK, e.ERROR_USER_NICKNAME_EXIST, nil)
+			app.Response(c, http.StatusOK, e.ERROR_USER_NICKNAME_EXIST, nil, "")
 			return
 		}
 	}
 
 	err := api.userService.Edit(userData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 func (api *UserApi) GetUserInfo(c *gin.Context) {
 	id := com.StrTo(c.Param("id")).MustInt()
 	userInfo := api.userService.GetUserInfo(id)
-	app.Response(c, http.StatusOK, e.SUCCESS, userInfo)
+	app.Response(c, http.StatusOK, e.SUCCESS, userInfo, "")
 }
 
 func (api *UserApi) ChangePassword(c *gin.Context) {
@@ -164,20 +164,20 @@ func (api *UserApi) ChangePassword(c *gin.Context) {
 		form request.ChangePasswordForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 
 	code := e.INVALID_PARAMS
 	if strings.Compare(form.Password, form.ConfirmPassword) != 0 {
 		code = e.ERROR_CONFIRM_PASSWORD_NOT_EQ
-		app.Response(c, http.StatusOK, code, nil)
+		app.Response(c, http.StatusOK, code, nil, "")
 		return
 	}
 	// 获取用户信息
 	id := (c.MustGet("userId")).(int)
 	code = api.userService.ChangePassword(id, form.Password, form.OldPassword)
-	app.Response(c, http.StatusOK, code, nil)
+	app.Response(c, http.StatusOK, code, nil, "")
 }

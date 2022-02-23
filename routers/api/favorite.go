@@ -29,13 +29,13 @@ func (api *FavoriteApi) GetFavorite(c *gin.Context) {
 
 	total, err := api.favoriteService.Count(&favoriteData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil, "")
 		return
 	}
 
 	favorite, err := api.favoriteService.GetAll(&favoriteData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil, "")
 		return
 	}
 
@@ -43,7 +43,7 @@ func (api *FavoriteApi) GetFavorite(c *gin.Context) {
 	data["lists"] = favorite
 	data["total"] = total
 
-	app.Response(c, http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }
 
 // AddFavorite 添加关注
@@ -53,9 +53,9 @@ func (api *FavoriteApi) AddFavorite(c *gin.Context) {
 		favoriteData service.Favorite
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 
@@ -65,11 +65,11 @@ func (api *FavoriteApi) AddFavorite(c *gin.Context) {
 	favoriteData.UserId = userId
 
 	if err := api.favoriteService.Add(&favoriteData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 // 取消关注
@@ -80,7 +80,7 @@ func (api *FavoriteApi) DeleteFavorite(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
 		return
 	}
 
@@ -92,9 +92,9 @@ func (api *FavoriteApi) DeleteFavorite(c *gin.Context) {
 	favoriteData.UserId = userId
 
 	if err := api.favoriteService.Delete(&favoriteData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }

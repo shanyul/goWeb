@@ -9,6 +9,7 @@ import (
 type WorksModel struct{}
 
 type Works struct {
+	BaseModel
 	CatId    int      `column:"cat_id" json:"catId"`
 	Category Category `gorm:"foreignKey:cat_id" json:"category"`
 
@@ -25,8 +26,6 @@ type Works struct {
 	IsOpen           int    `column:"is_open" json:"isOpen"`
 	State            int    `column:"state" json:"state"`
 	Remark           string `column:"remark" json:"remark"`
-	CreateTime       string `column:"create_time" json:"createTime"`
-	UpdateTime       string `column:"update_time" json:"updateTime"`
 	DeleteTimestamp  int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 
@@ -109,7 +108,7 @@ func (*WorksModel) ExistWorksById(id int) (bool, error) {
 // 新增数据
 func (*WorksModel) AddWorks(works *Works) error {
 	if err := dbHandle.Select(
-		"cat_id", "works_name", "user_id", "state", "works_link", "works_type", "works_description", "remark",
+		"cat_id", "works_name", "user_id", "is_open", "state", "works_link", "works_type", "works_description", "remark",
 	).Create(&works).Error; err != nil {
 		return err
 	}

@@ -33,13 +33,13 @@ func (api *UserCategoryApi) GetUserCategory(c *gin.Context) {
 
 	total, err := api.userCategoryService.Count(&categoryData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil, "")
 		return
 	}
 
 	works, err := api.userCategoryService.GetAll(&categoryData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil, "")
 		return
 	}
 
@@ -47,7 +47,7 @@ func (api *UserCategoryApi) GetUserCategory(c *gin.Context) {
 	data["lists"] = works
 	data["total"] = total
 
-	app.Response(c, http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }
 
 func (api *UserCategoryApi) GetOneCategory(c *gin.Context) {
@@ -58,7 +58,7 @@ func (api *UserCategoryApi) GetOneCategory(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
 		return
 	}
 
@@ -66,11 +66,11 @@ func (api *UserCategoryApi) GetOneCategory(c *gin.Context) {
 	userId := (c.MustGet("userId")).(int)
 	category, err := api.userCategoryService.Get(id, userId)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, category)
+	app.Response(c, http.StatusOK, e.SUCCESS, category, "")
 }
 
 func (api *UserCategoryApi) AddCategory(c *gin.Context) {
@@ -78,9 +78,9 @@ func (api *UserCategoryApi) AddCategory(c *gin.Context) {
 		form request.AddUserCategoryForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 	// 获取用户信息
@@ -88,7 +88,7 @@ func (api *UserCategoryApi) AddCategory(c *gin.Context) {
 	userInfo := api.userService.GetUserInfo(id)
 
 	if exist, _ := api.userCategoryService.ExistByName(form.UcatName, id); exist {
-		app.Response(c, httpCode, e.ERROR_EXIST_FAIL, nil)
+		app.Response(c, httpCode, e.ERROR_EXIST_FAIL, nil, "")
 		return
 	}
 
@@ -98,11 +98,11 @@ func (api *UserCategoryApi) AddCategory(c *gin.Context) {
 	categoryData.Username = userInfo.Username
 
 	if err := api.userCategoryService.Add(&categoryData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 func (api *UserCategoryApi) EditCategory(c *gin.Context) {
@@ -110,16 +110,16 @@ func (api *UserCategoryApi) EditCategory(c *gin.Context) {
 		form request.EditUserCategoryForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 
 	// 获取用户信息
 	id := (c.MustGet("userId")).(int)
 	if result, _ := api.userCategoryService.Get(form.UcatId, id); result.UcatId < 1 {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil, "")
 		return
 	}
 
@@ -128,11 +128,11 @@ func (api *UserCategoryApi) EditCategory(c *gin.Context) {
 	categoryData.UcatName = form.UcatName
 
 	if err := api.userCategoryService.Edit(&categoryData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 func (api *UserCategoryApi) DeleteCategory(c *gin.Context) {
@@ -142,21 +142,21 @@ func (api *UserCategoryApi) DeleteCategory(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
 		return
 	}
 	// 获取用户信息
 	userId := (c.MustGet("userId")).(int)
 	if result, _ := api.userCategoryService.Get(id, userId); result.UcatId < 1 {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil, "")
 		return
 	}
 
 	err := api.userCategoryService.Delete(id, userId)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }

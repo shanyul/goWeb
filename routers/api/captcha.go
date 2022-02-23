@@ -20,11 +20,11 @@ type CaptchaApi struct {
 func (api *CaptchaApi) Get(c *gin.Context) {
 	captchaData := api.captchaService.Get()
 	if captchaData.CaptchaId == "" {
-		app.Response(c, http.StatusOK, e.ERROR_GET_CAPTCHA_FAIL, nil)
+		app.Response(c, http.StatusOK, e.ERROR_GET_CAPTCHA_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, captchaData)
+	app.Response(c, http.StatusOK, e.SUCCESS, captchaData, "")
 }
 
 func (api *CaptchaApi) Show(c *gin.Context) {

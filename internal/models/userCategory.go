@@ -8,12 +8,11 @@ import (
 type UserCategoryModel struct{}
 
 type UserCategory struct {
+	BaseModel
 	UcatId          int    `gorm:"primary_key" column:"ucat_id" json:"ucatId"`
 	UcatName        string `column:"ucat_name" json:"ucatName"`
 	UserId          int    `column:"user_id" json:"userId"`
 	Username        string `column:"user_name" json:"username"`
-	CreateTime      string `column:"create_time" json:"createTime"`
-	UpdateTime      string `column:"update_time" json:"updateTime"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 

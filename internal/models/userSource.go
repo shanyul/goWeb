@@ -8,6 +8,7 @@ import (
 type UserSourceModel struct{}
 
 type Source struct {
+	BaseModel
 	UcatId   int          `column:"ucat_id" json:"ucatId"`
 	Category UserCategory `gorm:"foreignKey:ucat_id" json:"category"`
 
@@ -18,8 +19,6 @@ type Source struct {
 	Description     string `column:"description" json:"description"`
 	Link            string `column:"link" json:"link"`
 	Title           string `column:"title" json:"title"`
-	CreateTime      string `column:"create_time" json:"createTime"`
-	UpdateTime      string `column:"update_time" json:"updateTime"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 

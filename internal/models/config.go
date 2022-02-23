@@ -7,11 +7,10 @@ import (
 type ConfigModel struct{}
 
 type Config struct {
-	ConfigId   int    `gorm:"primary_key" column:"config_id" json:"configId"`
-	Key        string `column:"key" json:"key"`
-	Value      string `column:"value" json:"value"`
-	CreateTime string `column:"create_time" json:"createTime"`
-	UpdateTime string `column:"update_time" json:"updateTime"`
+	BaseModel
+	ConfigId int    `gorm:"primary_key" column:"config_id" json:"configId"`
+	Key      string `column:"key" json:"key"`
+	Value    string `column:"value" json:"value"`
 }
 
 // 自定义表名

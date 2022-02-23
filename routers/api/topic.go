@@ -32,7 +32,7 @@ func (api *TopicApi) GetTopics(c *gin.Context) {
 
 	total, err := api.topicService.Count(&topicData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil, "")
 		return
 	}
 	topicData.PageNum = util.GetPage(c)
@@ -40,7 +40,7 @@ func (api *TopicApi) GetTopics(c *gin.Context) {
 
 	topic, err := api.topicService.GetAll(&topicData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil, "")
 		return
 	}
 
@@ -48,7 +48,7 @@ func (api *TopicApi) GetTopics(c *gin.Context) {
 	data["lists"] = topic
 	data["total"] = total
 
-	app.Response(c, http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }
 
 // AddTopic 新增文章作品
@@ -58,9 +58,9 @@ func (api *TopicApi) AddTopic(c *gin.Context) {
 		topicData service.Topic
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 
@@ -79,11 +79,11 @@ func (api *TopicApi) AddTopic(c *gin.Context) {
 	topicData.Username = userInfo.Nickname
 
 	if err := api.topicService.Add(&topicData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 // 删除评论
@@ -94,16 +94,16 @@ func (api *TopicApi) DeleteTopic(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
 		return
 	}
 	// 获取用户信息
 	userId := (c.MustGet("userId")).(int)
 
 	if err := api.topicService.Delete(id, userId); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }

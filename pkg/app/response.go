@@ -12,10 +12,13 @@ type ResponseForm struct {
 }
 
 // Response setting gin.JSON
-func Response(ctx *gin.Context, httpCode, errCode int, data interface{}) {
+func Response(ctx *gin.Context, httpCode, errCode int, data interface{}, msg string) {
+	if msg == "" {
+		msg = e.GetMsg(errCode)
+	}
 	ctx.JSON(httpCode, ResponseForm{
 		Code: errCode,
-		Msg:  e.GetMsg(errCode),
+		Msg:  msg,
 		Data: data,
 	})
 	return

@@ -7,9 +7,9 @@ import (
 type FavoriteModel struct{}
 
 type Favorite struct {
-	UserId     int    `column:"user_id" json:"userId"`
-	WorksId    int    `column:"works_id" json:"worksId"`
-	CreateTime string `column:"create_time" json:"createTime"`
+	BaseModel
+	UserId  int `column:"user_id" json:"userId"`
+	WorksId int `column:"works_id" json:"worksId"`
 }
 
 // 自定义表名

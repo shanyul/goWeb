@@ -7,14 +7,13 @@ import (
 type CategoryModel struct{}
 
 type Category struct {
+	BaseModel
 	CatId           int    `gorm:"primary_key" column:"cat_id" json:"catId"`
 	CatName         string `column:"cat_name" json:"catName"`
 	ParentId        int    `column:"parent_id" json:"parentId"`
 	IsDirectory     int    `column:"is_directory" json:"isDirectory"`
 	Level           int    `column:"level" json:"level"`
 	Path            string `column:"path" json:"path"`
-	CreateTime      string `column:"create_time" json:"createTime"`
-	UpdateTime      string `column:"update_time" json:"updateTime"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 

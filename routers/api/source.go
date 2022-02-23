@@ -39,7 +39,7 @@ func (api *SourceApi) GetSource(c *gin.Context) {
 
 	total, err := api.sourceService.Count(&sourceData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil, "")
 		return
 	}
 
@@ -48,7 +48,7 @@ func (api *SourceApi) GetSource(c *gin.Context) {
 
 	sourceList, err := api.sourceService.GetAll(&sourceData)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil, "")
 		return
 	}
 
@@ -56,7 +56,7 @@ func (api *SourceApi) GetSource(c *gin.Context) {
 	data["lists"] = sourceList
 	data["total"] = total
 
-	app.Response(c, http.StatusOK, e.SUCCESS, data)
+	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }
 
 func (api *SourceApi) GetOneSource(c *gin.Context) {
@@ -67,17 +67,17 @@ func (api *SourceApi) GetOneSource(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
 		return
 	}
 
 	category, err := api.sourceService.Get(id)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, category)
+	app.Response(c, http.StatusOK, e.SUCCESS, category, "")
 }
 
 func (api *SourceApi) AddSource(c *gin.Context) {
@@ -85,9 +85,9 @@ func (api *SourceApi) AddSource(c *gin.Context) {
 		form request.AddUserSourceForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 	// 获取用户信息
@@ -96,7 +96,7 @@ func (api *SourceApi) AddSource(c *gin.Context) {
 
 	category, err := api.userCategoryService.Get(form.UcatId, id)
 	if category.UcatId == 0 || err != nil {
-		app.Response(c, httpCode, e.ERROR_NOT_EXIST_CAT, nil)
+		app.Response(c, httpCode, e.ERROR_NOT_EXIST_CAT, nil, "")
 		return
 	}
 
@@ -110,11 +110,11 @@ func (api *SourceApi) AddSource(c *gin.Context) {
 	sourceData.Link = form.Link
 
 	if err := api.sourceService.Add(&sourceData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 func (api *SourceApi) EditSource(c *gin.Context) {
@@ -122,9 +122,9 @@ func (api *SourceApi) EditSource(c *gin.Context) {
 		form request.EditUserSourceForm
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &form)
+	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil)
+		app.Response(c, httpCode, errCode, nil, msg)
 		return
 	}
 
@@ -132,7 +132,7 @@ func (api *SourceApi) EditSource(c *gin.Context) {
 	id := (c.MustGet("userId")).(int)
 	category, err := api.userCategoryService.Get(form.UcatId, id)
 	if category.UcatId == 0 || err != nil {
-		app.Response(c, httpCode, e.ERROR_NOT_EXIST_CAT, nil)
+		app.Response(c, httpCode, e.ERROR_NOT_EXIST_CAT, nil, "")
 		return
 	}
 
@@ -145,11 +145,11 @@ func (api *SourceApi) EditSource(c *gin.Context) {
 	sourceData.Link = form.Link
 
 	if err := api.sourceService.Edit(&sourceData); err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
 
 func (api *SourceApi) DeleteSource(c *gin.Context) {
@@ -159,22 +159,22 @@ func (api *SourceApi) DeleteSource(c *gin.Context) {
 
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
-		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
 		return
 	}
 	// 获取用户信息
 	userId := (c.MustGet("userId")).(int)
 	result, err := api.sourceService.Get(id)
 	if result.UserId != userId {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_NOT_EXIST, nil, "")
 		return
 	}
 
 	err = api.sourceService.Delete(id, userId)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_FAIL, nil, "")
 		return
 	}
 
-	app.Response(c, http.StatusOK, e.SUCCESS, nil)
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
