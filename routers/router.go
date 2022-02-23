@@ -28,8 +28,8 @@ func InitRouter() *gin.Engine {
 	// 小程序登录
 	r.GET("/wechat/login", baseApi.wechatApi.Login)
 	// 验证码
-	r.GET("/captcha", baseApi.CaptchaApi.Get)
 	r.GET("/captcha/show/:image", baseApi.CaptchaApi.Show)
+	r.GET("/captcha", baseApi.CaptchaApi.Get)
 	// 用户操作
 	r.GET("/auth/:id", middleware.JWT(), baseApi.UserApi.GetUserInfo)
 	r.PUT("/auth/edit", middleware.JWT(), baseApi.UserApi.EditUser)
