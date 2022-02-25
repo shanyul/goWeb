@@ -11,10 +11,12 @@ type User struct {
 	Password        string `column:"password" json:"password"`
 	Nickname        string `column:"nickname" json:"nickname"`
 	Avatar          string `column:"avatar" json:"avatar"`
+	Sex             int    `column:"sex" json:"sex"`
 	BgImage         string `column:"bg_image" json:"bgImage"`
 	Phone           string `column:"phone" json:"phone"`
 	Email           string `column:"email" json:"email"`
 	State           string `column:"state" json:"state"`
+	Country         string `column:"country" json:"country"`
 	Province        string `column:"province" json:"province"`
 	City            string `column:"city" json:"city"`
 	Distinct        string `column:"distinct" json:"distinct"`
@@ -98,7 +100,12 @@ func (*UserModel) AddWechatUser(data *User) int {
 	if err := dbHandle.Select(
 		"wechat_openid",
 		"union_id",
-		"session_key",
+		"nickname",
+		"sex",
+		"country",
+		"province",
+		"avatar",
+		"city",
 	).Create(&data).Error; err != nil {
 		return 0
 	}

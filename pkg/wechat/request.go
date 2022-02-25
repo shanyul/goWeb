@@ -97,3 +97,18 @@ func (*Wechat) GetWebAccessToken(code string) (WebAccessTokenResponseForm, error
 
 	return response, nil
 }
+
+func (*Wechat) GetUserInfo(token string, openId string) (UserInfoResponseForm, error) {
+	var response UserInfoResponseForm
+
+	params := fmt.Sprintf("access_token=%s&openid=%s", token, openId)
+	requestUrl := wechatApi + "/sns/userinfo?" + params
+
+	requestData, err := util.Get(requestUrl, 5)
+	if err != nil {
+		return response, err
+	}
+	_ = json.Unmarshal([]byte(requestData), &response)
+
+	return response, nil
+}

@@ -5,6 +5,7 @@ import (
 	"designer-api/pkg/e"
 	"designer-api/pkg/gredis"
 	"designer-api/pkg/util"
+	"designer-api/pkg/wechat"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
@@ -99,10 +100,12 @@ func (service *UserService) saveUser(authInfo models.User) (map[string]interface
 	info["username"] = authInfo.Username
 	info["nickname"] = authInfo.Nickname
 	info["avatar"] = authInfo.Avatar
+	info["sex"] = authInfo.Sex
 	info["bgImage"] = authInfo.BgImage
 	info["phone"] = authInfo.Phone
 	info["email"] = authInfo.Email
 	info["state"] = authInfo.State
+	info["country"] = authInfo.Country
 	info["province"] = authInfo.Province
 	info["city"] = authInfo.City
 	info["distinct"] = authInfo.Distinct
@@ -169,6 +172,60 @@ func (service *UserService) CheckByCode(code string, sessionKey string, unionId 
 
 	// 小程序登录保存一个星期过期时间
 	ttl := 7 * 24 * time.Hour
+	token, err := util.GenerateToken(authInfo.UserId, ttl)
+	if err != nil {
+		responseCode = e.ERROR_AUTH_TOKEN
+		return
+	}
+
+	info, err = service.saveUser(authInfo)
+	if err != nil {
+		responseCode = e.ERROR_LOGIN_FAIL
+		return
+	}
+	info["token"] = token
+
+	return
+}
+
+// CheckByCode 检查用户通过 openid
+func (service *UserService) WebScanLogin(userinfo wechat.UserInfoResponseForm) (info map[string]interface{}, responseCode int) {
+	authInfo, err := service.UserModel.GetByCode(userinfo.OpenId)
+	responseCode = e.SUCCESS
+	if err != nil {
+		responseCode = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+		return
+	}
+	user := models.User{}
+	if authInfo.UserId == 0 {
+		user.WechatOpenid = userinfo.OpenId
+		user.UnionId = userinfo.UnionId
+		user.Nickname = userinfo.Nickname
+		user.Sex = userinfo.Sex
+		user.Country = userinfo.Country
+		user.Province = userinfo.Province
+		user.Avatar = userinfo.Avatar
+		user.City = userinfo.City
+		authInfo.UserId = service.UserModel.AddWechatUser(&user)
+	} else {
+		user.WechatOpenid = userinfo.OpenId
+		user.UnionId = userinfo.UnionId
+		user.Nickname = userinfo.Nickname
+		user.Sex = userinfo.Sex
+		user.Country = userinfo.Country
+		user.Province = userinfo.Province
+		user.Avatar = userinfo.Avatar
+		user.City = userinfo.City
+		_ = service.UserModel.EditUser(user.UserId, user)
+	}
+
+	if authInfo.UserId == 0 {
+		responseCode = e.ERROR_AUTH_TOKEN
+		return
+	}
+
+	// 网页登录保存过期时间
+	ttl := 2 * 24 * time.Hour
 	token, err := util.GenerateToken(authInfo.UserId, ttl)
 	if err != nil {
 		responseCode = e.ERROR_AUTH_TOKEN

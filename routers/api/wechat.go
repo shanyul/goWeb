@@ -72,7 +72,10 @@ func (api *WechatApi) WebCallback(c *gin.Context) {
 		app.Response(c, http.StatusBadRequest, e.ERROR_WECHAT_REQUEST_FAIL, nil, "")
 		return
 	}
-	data, responseCode := api.userService.CheckByCode(response.OpenId, "", response.UnionId)
+	// 获取用户信息
+	userInfo, _ := api.wechat.GetUserInfo(response.AccessToken, response.OpenId)
+
+	data, responseCode := api.userService.WebScanLogin(userInfo)
 	app.Response(c, http.StatusOK, responseCode, data, "")
 }
 

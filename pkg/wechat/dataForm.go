@@ -23,3 +23,14 @@ type WebAccessTokenResponseForm struct {
 	Scope        string `json:"scope"`
 	UnionId      string `json:"unionid"`
 }
+
+type UserInfoResponseForm struct {
+	OpenId   string `json:"openid"`
+	Nickname string `json:"nickname"`
+	Sex      int    `json:"sex"`
+	Province string `json:"province"`
+	City     string `json:"city"`
+	Country  string `json:"country"`
+	Avatar   string `json:"headimgurl"`
+	UnionId  string `json:"unionid"`
+}
