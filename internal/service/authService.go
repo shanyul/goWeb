@@ -162,7 +162,7 @@ func (service *UserService) CheckByCode(code string, sessionKey string, unionId 
 		authInfo.UserId = service.UserModel.AddWechatUser(&user)
 	} else if sessionKey != "" {
 		user.SessionKey = sessionKey
-		_ = service.UserModel.EditUser(user.UserId, user)
+		_ = service.UserModel.EditUser(authInfo.UserId, user)
 	}
 
 	if authInfo.UserId == 0 {
@@ -188,7 +188,7 @@ func (service *UserService) CheckByCode(code string, sessionKey string, unionId 
 	return
 }
 
-// CheckByCode 检查用户通过 openid
+// WebScanLogin 检查用户通过 openid
 func (service *UserService) WebScanLogin(userinfo wechat.UserInfoResponseForm) (info map[string]interface{}, responseCode int) {
 	authInfo, err := service.UserModel.GetByCode(userinfo.OpenId)
 	responseCode = e.SUCCESS
@@ -216,7 +216,7 @@ func (service *UserService) WebScanLogin(userinfo wechat.UserInfoResponseForm) (
 		user.Province = userinfo.Province
 		user.Avatar = userinfo.Avatar
 		user.City = userinfo.City
-		_ = service.UserModel.EditUser(user.UserId, user)
+		_ = service.UserModel.EditUser(authInfo.UserId, user)
 	}
 
 	if authInfo.UserId == 0 {
