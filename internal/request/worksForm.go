@@ -7,7 +7,7 @@ type AddWorksForm struct {
 	IsOpen           int    `form:"isOpen" valid:"Range(0,1)"`
 	CatId            int    `form:"catId" valid:"Required;Min(1)"`
 	WorksLink        string `form:"worksLink" valid:"Required;MaxSize(255)"`
-	WorksType        int    `form:"worksType" valid:"Required"`
+	WorksType        int    `form:"worksType" valid:"Range(0,10)"`
 	WorksDescription string `form:"worksDescription" valid:"Required"`
 	Remark           string `form:"remark" valid:"MaxSize(255)"`
 }
