@@ -162,7 +162,12 @@ func (service *UserService) CheckByCode(code string, sessionKey string, unionId 
 		_ = service.UserModel.EditUser(user.UserId, user)
 	}
 
-	// 小程序登录报错一个月过期时间
+	if authInfo.UserId == 0 {
+		responseCode = e.ERROR_AUTH_TOKEN
+		return
+	}
+
+	// 小程序登录保存一个星期过期时间
 	ttl := 7 * 24 * time.Hour
 	token, err := util.GenerateToken(authInfo.UserId, ttl)
 	if err != nil {

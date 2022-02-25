@@ -5,9 +5,10 @@ import (
 	"designer-api/pkg/e"
 	"designer-api/pkg/logging"
 	"designer-api/pkg/upload"
-	"net/http"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"time"
 )
 
 type UploadApi struct{}
@@ -51,5 +52,35 @@ func (api *UploadApi) UploadImage(c *gin.Context) {
 	app.Response(c, http.StatusOK, e.SUCCESS, map[string]string{
 		"url":     upload.GetImageFullUrl(imageName),
 		"saveUrl": savePath + imageName,
+	}, "")
+}
+
+func (api *UploadApi) Upload(c *gin.Context) {
+	file, err := c.FormFile("filename")
+	if err != nil {
+		logging.Warn(err)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_UPLOAD_FILE_NOT_INPUT, nil, "")
+		return
+	}
+	// 限制 20M
+	if file.Size > 20*1024*1024 {
+		logging.Warn(err)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_UPLOAD_CHECK_SIZE_FAIL, nil, "")
+		return
+	}
+
+	filename := upload.GetImageName(file.Filename)
+	path := fmt.Sprintf("aseert/%d%d/%s", time.Now().Year(), time.Now().Month(), filename)
+
+	url, err := upload.UploadFile(path, file)
+	if err != nil {
+		logging.Warn(err)
+		app.Response(c, http.StatusInternalServerError, e.ERROR_UPLOAD_FAIL, nil, "")
+		return
+	}
+
+	app.Response(c, http.StatusOK, e.SUCCESS, map[string]string{
+		"name": file.Filename,
+		"url":  url,
 	}, "")
 }

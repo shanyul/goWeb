@@ -21,6 +21,7 @@ const (
 	prefixWebAccessTokenKey = "prefix_web_access_token"
 )
 
+// Code2Session 小程序登录
 func (*Wechat) Code2Session(code string) (Code2SessionResponseForm, error) {
 	params := fmt.Sprintf(checkParam+"&grant_type=authorization_code&js_code=%s", setting.WechatSetting.AppId, setting.WechatSetting.AppSecret, code)
 	requestUrl := wechatApi + "/sns/jscode2session?" + params
@@ -34,6 +35,7 @@ func (*Wechat) Code2Session(code string) (Code2SessionResponseForm, error) {
 	return response, nil
 }
 
+// GetAccessToken 获取小程序 access token
 func (*Wechat) GetAccessToken() (AccessTokenResponseForm, error) {
 	var response AccessTokenResponseForm
 	cacheData, err := gredis.Get(prefixAccessTokenKey)
@@ -59,17 +61,18 @@ func (*Wechat) GetAccessToken() (AccessTokenResponseForm, error) {
 	return response, nil
 }
 
-// GetWebCode 扫码地址
+// GetWebCode 微信扫码登录地址
 func (*Wechat) GetWebCode() string {
 	redirectUrl := setting.AppSetting.AppHost + "/wechat/web-callback?timestamp=" + strconv.FormatInt(time.Now().Unix(), 10)
 	sign := util.StringToMd5(redirectUrl)
 	urlEncode := url.QueryEscape(redirectUrl)
 	requestCodeUrl := fmt.Sprintf("%s/connect/qrconnect?appid=%s&redirect_uri=%s&response_type=code&scope=snsapi_login&state=%s#wechat_redirect",
-		wechatOpenApi, setting.WechatSetting.AppId, urlEncode, sign)
+		wechatOpenApi, setting.WechatSetting.WebAppId, urlEncode, sign)
 
 	return requestCodeUrl
 }
 
+// GetWebAccessToken 获取网页端微信 access token
 func (*Wechat) GetWebAccessToken(code string) (WebAccessTokenResponseForm, error) {
 	var response WebAccessTokenResponseForm
 	cacheData, err := gredis.Get(prefixWebAccessTokenKey)
@@ -78,7 +81,7 @@ func (*Wechat) GetWebAccessToken(code string) (WebAccessTokenResponseForm, error
 	}
 
 	if response.AccessToken == "" {
-		params := fmt.Sprintf(checkParam+"&code=%s&grant_type=authorization_code", setting.WechatSetting.AppId, setting.WechatSetting.AppSecret, code)
+		params := fmt.Sprintf(checkParam+"&code=%s&grant_type=authorization_code", setting.WechatSetting.WebAppId, setting.WechatSetting.WebAppSecret, code)
 		requestUrl := wechatApi + "/sns/oauth2/access_token?" + params
 
 		requestData, err := util.Get(requestUrl, 5)

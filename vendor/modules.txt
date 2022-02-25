@@ -37,6 +37,9 @@ github.com/golang/protobuf/proto
 ## explicit
 github.com/gomodule/redigo/internal
 github.com/gomodule/redigo/redis
+# github.com/google/go-querystring v1.1.0
+## explicit
+github.com/google/go-querystring/query
 # github.com/jinzhu/inflection v1.0.0
 github.com/jinzhu/inflection
 # github.com/jinzhu/now v1.1.4
@@ -53,9 +56,15 @@ github.com/mattn/go-isatty
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 github.com/modern-go/reflect2
+# github.com/mozillazg/go-httpheader v0.3.0
+## explicit
+github.com/mozillazg/go-httpheader
 # github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18
 ## explicit
 github.com/shiena/ansicolor
+# github.com/tencentyun/cos-go-sdk-v5 v0.7.33
+## explicit
+github.com/tencentyun/cos-go-sdk-v5
 # github.com/ugorji/go v1.2.6
 ## explicit
 # github.com/ugorji/go/codec v1.2.6

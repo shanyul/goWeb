@@ -25,6 +25,8 @@ func Get(requestUrl string, timeout time.Duration) (string, error) {
 		logging.Info(requestUrl, err)
 		return "", err
 	}
+	logging.Info(requestUrl, string(body))
+
 	return string(body), nil
 }
 
@@ -50,5 +52,7 @@ func Post(requestUrl string, data map[string]string, timeout time.Duration) (str
 		logging.Info(requestUrl, data, err)
 		return "", err
 	}
+	logging.Info(requestUrl, string(body))
+
 	return string(body), nil
 }

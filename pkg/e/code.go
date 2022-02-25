@@ -43,6 +43,8 @@ const (
 	ERROR_UPLOAD_SAVE_IMAGE_FAIL    = 30001
 	ERROR_UPLOAD_CHECK_IMAGE_FAIL   = 30002
 	ERROR_UPLOAD_CHECK_IMAGE_FORMAT = 30003
+	ERROR_UPLOAD_CHECK_SIZE_FAIL    = 30004
+	ERROR_UPLOAD_FAIL               = 30005
 
 	ERROR_WECHAT_REQUEST_FAIL = 40000
 	ERROR_WECHAT_CODE_FAIL    = 40001
@@ -88,6 +90,8 @@ var MsgFlags = map[int]string{
 	ERROR_WECHAT_CODE_FAIL:          "code无效",
 	ERROR_OLD_PASSWORD_FAIL:         "旧密码错误",
 	ERROR_PASSWORD_CHANGE_FAIL:      "密码修改失败",
+	ERROR_UPLOAD_CHECK_SIZE_FAIL:    "请上传小于 20M 的文件",
+	ERROR_UPLOAD_FAIL:               "文件上传失败",
 }
 
 func GetMsg(code int) string {

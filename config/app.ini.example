@@ -43,3 +43,7 @@ IdleTimeout = 200
 [wechat]
 AppId =
 AppSecret =
+WebAppId =
+WebAppSecret =
+CosKey =
+CosSecret =

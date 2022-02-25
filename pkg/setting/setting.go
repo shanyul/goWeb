@@ -50,8 +50,12 @@ type Redis struct {
 }
 
 type Wechat struct {
-	AppId     string
-	AppSecret string
+	AppId        string
+	AppSecret    string
+	WebAppId     string
+	WebAppSecret string
+	CosKey       string
+	CosSecret    string
 }
 
 var (

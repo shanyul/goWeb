@@ -11,9 +11,12 @@ require (
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mozillazg/go-httpheader v0.3.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.33
 	github.com/ugorji/go v1.2.6 // indirect
 	github.com/unknwon/com v1.0.1
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292

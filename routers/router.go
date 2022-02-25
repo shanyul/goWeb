@@ -18,7 +18,8 @@ func InitRouter() *gin.Engine {
 	baseApi := ApiCommon{}
 	// 文件处理
 	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
-	r.POST("/upload", middleware.JWT(), baseApi.UploadApi.UploadImage)
+	r.POST("/upload/image", middleware.JWT(), baseApi.UploadApi.UploadImage)
+	r.POST("/upload", middleware.JWT(), baseApi.UploadApi.Upload)
 	// 网页登录注册
 	r.POST("/auth/login", baseApi.UserApi.Login)
 	r.POST("/auth/register", baseApi.UserApi.Register)

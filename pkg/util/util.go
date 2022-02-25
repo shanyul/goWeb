@@ -13,6 +13,8 @@ func Setup() {
 	jwtSecret = []byte(setting.AppSetting.JwtSecret)
 	// set valid
 	validation.SetDefaultMessage(app.MessageTmp)
+	// 初始化 cos 存储
+	//upload.SetClient()
 }
 
 func StringToMd5(str string) string {
