@@ -196,27 +196,27 @@ func (service *UserService) WebScanLogin(userinfo wechat.UserInfoResponseForm) (
 		responseCode = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 		return
 	}
-	user := models.User{}
+	//user := models.User{}
 	if authInfo.UserId == 0 {
-		user.WechatOpenid = userinfo.OpenId
-		user.UnionId = userinfo.UnionId
-		user.Nickname = userinfo.Nickname
-		user.Sex = userinfo.Sex
-		user.Country = userinfo.Country
-		user.Province = userinfo.Province
-		user.Avatar = userinfo.Avatar
-		user.City = userinfo.City
-		authInfo.UserId = service.UserModel.AddWechatUser(&user)
+		authInfo.WechatOpenid = userinfo.OpenId
+		authInfo.UnionId = userinfo.UnionId
+		authInfo.Nickname = userinfo.Nickname
+		authInfo.Sex = userinfo.Sex
+		authInfo.Country = userinfo.Country
+		authInfo.Province = userinfo.Province
+		authInfo.Avatar = userinfo.Avatar
+		authInfo.City = userinfo.City
+		authInfo.UserId = service.UserModel.AddWechatUser(&authInfo)
 	} else {
-		user.WechatOpenid = userinfo.OpenId
-		user.UnionId = userinfo.UnionId
-		user.Nickname = userinfo.Nickname
-		user.Sex = userinfo.Sex
-		user.Country = userinfo.Country
-		user.Province = userinfo.Province
-		user.Avatar = userinfo.Avatar
-		user.City = userinfo.City
-		_ = service.UserModel.EditUser(authInfo.UserId, user)
+		authInfo.WechatOpenid = userinfo.OpenId
+		authInfo.UnionId = userinfo.UnionId
+		authInfo.Nickname = userinfo.Nickname
+		authInfo.Sex = userinfo.Sex
+		authInfo.Country = userinfo.Country
+		authInfo.Province = userinfo.Province
+		authInfo.Avatar = userinfo.Avatar
+		authInfo.City = userinfo.City
+		_ = service.UserModel.EditUser(authInfo.UserId, authInfo)
 	}
 
 	if authInfo.UserId == 0 {
