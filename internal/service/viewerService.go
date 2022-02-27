@@ -12,7 +12,7 @@ type Viewer struct {
 }
 
 func (service *ViewService) Add(view *Viewer) error {
-	if isView := service.ViewerModel.IsView(view.UserId, view.WorksId); !isView {
+	/*if isView := service.ViewerModel.IsView(view.UserId, view.WorksId); !isView {
 
 		viewData := models.Viewer{}
 		viewData.UserId = view.UserId
@@ -21,7 +21,7 @@ func (service *ViewService) Add(view *Viewer) error {
 		if err := service.ViewerModel.AddView(&viewData); err != nil {
 			return err
 		}
-	}
+	}*/
 
 	field := "view_num"
 	_ = service.WorksModel.Increment(view.WorksId, field)

@@ -102,7 +102,8 @@ func (api *WorksApi) GetOneWorks(c *gin.Context) {
 	}
 
 	// 获取用户信息
-	userId := (c.MustGet("userId")).(int)
+	//userId := (c.MustGet("userId")).(int)
+	userId := 0
 	works, err := api.worksService.Get(id, userId)
 	if err != nil {
 		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_WORKS_FAIL, nil, "")
