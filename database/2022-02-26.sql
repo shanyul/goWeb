@@ -8,7 +8,6 @@ CREATE TABLE `tags` (
     `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `delete_timestamp` int(11) NOT NULL DEFAULT '0',
     PRIMARY KEY (`tag_id`),
-    CONSTRAINT `fk_tags_id` FOREIGN KEY (`tag_id`) REFERENCES `works_tag` (`tag_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
