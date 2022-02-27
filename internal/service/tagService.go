@@ -3,7 +3,8 @@ package service
 import "designer-api/internal/models"
 
 type TagService struct {
-	TagsModel models.TagsModel
+	TagsModel     models.TagsModel
+	WorksTagModel models.WorksTagModel
 }
 
 type Tags struct {
@@ -59,7 +60,16 @@ func (service *TagService) Get(tagId int) (models.Tags, error) {
 }
 
 func (service *TagService) Delete(tagId int, userId int) error {
-	return service.TagsModel.DeleteTag(tagId, userId)
+	err := service.TagsModel.DeleteTag(tagId, userId)
+	if err != nil {
+		return err
+	}
+	err = service.WorksTagModel.DeleteByTag(tagId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (service *TagService) Count(tag *Tags) (int64, error) {

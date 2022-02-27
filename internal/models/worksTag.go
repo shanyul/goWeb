@@ -62,6 +62,14 @@ func (*WorksTagModel) Delete(worksId int) error {
 	return nil
 }
 
+func (*WorksTagModel) DeleteByTag(tagId int) error {
+	if err := dbHandle.Where("tag_id = ?", tagId).Delete(&WorksTag{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // 获取总记录数
 func (*WorksTagModel) GetTotal(maps interface{}) (int64, error) {
 	var count int64

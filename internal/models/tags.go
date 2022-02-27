@@ -2,7 +2,6 @@ package models
 
 import (
 	"gorm.io/gorm"
-	"time"
 )
 
 type TagsModel struct{}
@@ -32,9 +31,9 @@ func (*TagsModel) GetTagList(orderBy string, maps interface{}) ([]Tags, error) {
 	)
 
 	if orderBy != "" {
-		err = dbHandle.Preload("Works").Where(maps).Order(orderBy).Find(&tags).Error
+		err = dbHandle.Where(maps).Order(orderBy).Find(&tags).Error
 	} else {
-		err = dbHandle.Preload("Works").Where(maps).Find(&tags).Error
+		err = dbHandle.Where(maps).Find(&tags).Error
 	}
 
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -78,7 +77,7 @@ func (*TagsModel) AddTag(tag *Tags) error {
 }
 
 func (*TagsModel) EditTag(id int, userId int, tag *Tags) error {
-	if err := dbHandle.Model(&Tags{}).Where("tag_id = ? AND user_id = ?", id).Updates(tag).Error; err != nil {
+	if err := dbHandle.Model(&Tags{}).Where("tag_id = ? AND user_id = ?", id, userId).Updates(tag).Error; err != nil {
 		return err
 	}
 
@@ -86,9 +85,7 @@ func (*TagsModel) EditTag(id int, userId int, tag *Tags) error {
 }
 
 func (*TagsModel) DeleteTag(id int, userId int) error {
-	maps := make(map[string]interface{})
-	maps["delete_timestamp"] = time.Now().Unix()
-	if err := dbHandle.Model(&Tags{}).Select("delete_timestamp").Where("tag_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {
+	if err := dbHandle.Select("delete_timestamp").Where("tag_id = ? AND user_id = ?", id, userId).Delete(&Tags{}).Error; err != nil {
 		return err
 	}
 
