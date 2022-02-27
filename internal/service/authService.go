@@ -111,6 +111,9 @@ func (service *UserService) saveUser(authInfo models.User) (map[string]interface
 	info["distinct"] = authInfo.Distinct
 	info["address"] = authInfo.Address
 	info["createTime"] = authInfo.CreateTime
+	info["profession"] = authInfo.Profession
+	info["charge"] = authInfo.Charge
+	info["introduction"] = authInfo.Introduction
 
 	// 保存用户信息
 	key := fmt.Sprintf("%s:%d", prefixLoginKey, authInfo.UserId)
@@ -134,6 +137,9 @@ func (service *UserService) Edit(u User) error {
 	user.Distinct = u.Distinct
 	user.Address = u.Address
 	user.Remark = u.Remark
+	user.Profession = u.Profession
+	user.Charge = u.Charge
+	user.Introduction = u.Introduction
 
 	if err := service.UserModel.EditUser(u.UserId, user); err != nil {
 		return err

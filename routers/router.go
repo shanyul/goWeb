@@ -51,6 +51,7 @@ func InitRouter() *gin.Engine {
 		apiHandle.POST("/works", baseApi.WorksApi.AddWorks)
 		apiHandle.PUT("/works", baseApi.WorksApi.EditWorks)
 		apiHandle.DELETE("/works/:id", baseApi.WorksApi.DeleteWorks)
+		apiHandle.DELETE("/works/true/:id", baseApi.WorksApi.Delete)
 		// 评论
 		apiHandle.GET("/topic", baseApi.TopicApi.GetTopics)
 		apiHandle.POST("/topic", baseApi.TopicApi.AddTopic)
@@ -77,6 +78,12 @@ func InitRouter() *gin.Engine {
 		apiHandle.POST("/config", baseApi.configApi.AddConfig)
 		apiHandle.PUT("/config", baseApi.configApi.EditConfig)
 		apiHandle.DELETE("/config/:id", baseApi.configApi.DeleteConfig)
+		// 标签
+		apiHandle.GET("/tags", baseApi.tagsApi.GetList)
+		apiHandle.GET("/tags/:id", baseApi.tagsApi.GetOne)
+		apiHandle.POST("/tags", baseApi.tagsApi.AddTag)
+		apiHandle.PUT("/tags", baseApi.tagsApi.EditTag)
+		apiHandle.DELETE("/tags/:id", baseApi.tagsApi.Delete)
 	}
 
 	return r

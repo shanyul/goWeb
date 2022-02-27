@@ -14,4 +14,5 @@ type ApiCommon struct {
 	sourceApi       api.SourceApi
 	configApi       api.ConfigApi
 	wechatApi       api.WechatApi
+	tagsApi         api.TagsApi
 }

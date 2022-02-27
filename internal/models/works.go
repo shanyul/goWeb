@@ -10,8 +10,7 @@ type WorksModel struct{}
 
 type Works struct {
 	BaseModel
-	CatId    int      `column:"cat_id" json:"catId"`
-	Category Category `gorm:"foreignKey:cat_id" json:"category"`
+	Tags []WorksTag `gorm:"foreignKey:works_id" json:"tags"`
 
 	WorksId          int    `gorm:"primary_key" column:"works_id" json:"worksId"`
 	UserId           int    `column:"user_id" json:"userId"`
@@ -29,15 +28,25 @@ type Works struct {
 	DeleteTimestamp  int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 
+// 自定义表名
+func (Works) TableName() string {
+	return "works"
+}
+
 // GetWorks 获取作品
-func (*WorksModel) GetWorks(pageNum int, pageSize int, maps interface{}, orderBy string) ([]Works, error) {
+func (*WorksModel) GetWorks(pageNum int, pageSize int, maps map[string]interface{}, orderBy string) ([]Works, error) {
 	var works []Works
 	var err error
-	if orderBy != "" {
-		err = dbHandle.Preload("Category").Where(maps).Order(orderBy).Limit(pageSize).Offset(pageNum).Find(&works).Error
-	} else {
-		err = dbHandle.Preload("Category").Where(maps).Limit(pageSize).Offset(pageNum).Find(&works).Error
+	query := dbHandle.Preload("Tags")
+	if maps["delete_timestamp"] == 1 {
+		delete(maps, "delete_timestamp")
+		query = query.Where("delete_timestamp > ?", 100)
 	}
+	query = query.Where(maps)
+	if orderBy != "" {
+		query = query.Order(orderBy)
+	}
+	err = query.Limit(pageSize).Offset(pageNum).Find(&works).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -48,21 +57,24 @@ func (*WorksModel) GetWorks(pageNum int, pageSize int, maps interface{}, orderBy
 
 func (*WorksModel) GetOneWorks(id int) (Works, error) {
 	works := Works{}
-	err := dbHandle.Where("works_id = ?", id).First(&works).Error
+	err := dbHandle.Preload("Tags").Where("works_id = ?", id).First(&works).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		return works, err
-	}
-	err = dbHandle.Model(&works).Association("Category").Find(&works.Category)
-	if err != nil {
 		return works, err
 	}
 
 	return works, nil
 }
 
-func (*WorksModel) GetWorksTotal(maps interface{}) (int64, error) {
+func (*WorksModel) GetWorksTotal(maps map[string]interface{}) (int64, error) {
 	var count int64
-	if err := dbHandle.Model(&Works{}).Where(maps).Count(&count).Error; err != nil && err != gorm.ErrRecordNotFound {
+	var err error
+	if maps["delete_timestamp"] == 1 {
+		delete(maps, "delete_timestamp")
+		err = dbHandle.Model(&Works{}).Where("delete_timestamp > ?", 100).Where(maps).Count(&count).Error
+	} else {
+		err = dbHandle.Model(&Works{}).Where(maps).Count(&count).Error
+	}
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return 0, err
 	}
 	return count, nil
@@ -106,19 +118,29 @@ func (*WorksModel) ExistWorksById(id int) (bool, error) {
 }
 
 // 新增数据
-func (*WorksModel) AddWorks(works *Works) error {
+func (*WorksModel) AddWorks(works *Works) (int, error) {
 	if err := dbHandle.Select(
 		"cat_id", "works_name", "user_id", "is_open", "state", "works_link", "works_type", "works_description", "remark",
 	).Create(&works).Error; err != nil {
+		return 0, err
+	}
+
+	return works.WorksId, nil
+}
+
+func (*WorksModel) DeleteWorks(id int, userId int) error {
+	maps := make(map[string]interface{})
+	maps["delete_timestamp"] = time.Now().Unix()
+	if err := dbHandle.Model(&Works{}).Select("delete_timestamp").Where("works_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (*WorksModel) DeleteWorks(id int, userId int) error {
+func (*WorksModel) Delete(id int, userId int) error {
 	maps := make(map[string]interface{})
-	maps["delete_timestamp"] = time.Now().Unix()
+	maps["delete_timestamp"] = -1
 	if err := dbHandle.Model(&Works{}).Select("delete_timestamp").Where("works_id = ? AND user_id = ?", id, userId).Updates(maps).Error; err != nil {
 		return err
 	}

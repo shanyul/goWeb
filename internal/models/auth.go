@@ -25,6 +25,9 @@ type User struct {
 	WechatOpenid    string `column:"wechat_openid" json:"wechatOpenid"`
 	UnionId         string `column:"union_id" json:"unionId"`
 	SessionKey      string `column:"session_key" json:"sessionKey"`
+	Profession      string `column:"profession" json:"profession"`
+	Charge          string `column:"charge" json:"charge"`
+	Introduction    string `column:"introduction" json:"introduction"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 

@@ -41,10 +41,7 @@ func (api *UserApi) Login(c *gin.Context) {
 }
 
 func (api *UserApi) Register(c *gin.Context) {
-	var (
-		form request.RegisterUserForm
-	)
-
+	var form request.RegisterUserForm
 	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		app.Response(c, httpCode, errCode, nil, msg)
@@ -111,10 +108,7 @@ func (api *UserApi) RefreshToken(c *gin.Context) {
 
 // 修改用户信息
 func (api *UserApi) EditUser(c *gin.Context) {
-	var (
-		form = request.EditUserForm{}
-	)
-
+	var form request.EditUserForm
 	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		app.Response(c, httpCode, errCode, nil, msg)
@@ -136,6 +130,9 @@ func (api *UserApi) EditUser(c *gin.Context) {
 	userData.Distinct = form.Distinct
 	userData.Address = form.Address
 	userData.Remark = form.Remark
+	userData.Profession = form.Profession
+	userData.Charge = form.Charge
+	userData.Introduction = form.Introduction
 
 	if userInfo.Username != form.Username {
 		if exist, _ := api.userService.ExistNickname(form.Username); exist {

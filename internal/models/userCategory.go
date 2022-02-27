@@ -12,7 +12,7 @@ type UserCategory struct {
 	UcatId          int    `gorm:"primary_key" column:"ucat_id" json:"ucatId"`
 	UcatName        string `column:"ucat_name" json:"ucatName"`
 	UserId          int    `column:"user_id" json:"userId"`
-	Username        string `column:"user_name" json:"username"`
+	Username        string `column:"username" json:"username"`
 	DeleteTimestamp int    `column:"delete_timestamp" json:"deleteTimestamp"`
 }
 

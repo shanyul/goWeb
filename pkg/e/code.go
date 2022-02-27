@@ -85,7 +85,7 @@ var MsgFlags = map[int]string{
 	ERROR_UPLOAD_FILE_NOT_INPUT:     "请选择上传文件",
 	ERROR_GET_CAPTCHA_FAIL:          "获取验证码失败",
 	ERROR_CHECK_CAPTCHA_FAIL:        "验证码过期或错误",
-	ERROR_EXIST_FAIL:                "内容已存在",
+	ERROR_EXIST_FAIL:                "数据已存在",
 	ERROR_WECHAT_REQUEST_FAIL:       "请求微信接口失败",
 	ERROR_WECHAT_CODE_FAIL:          "code无效",
 	ERROR_OLD_PASSWORD_FAIL:         "旧密码错误",

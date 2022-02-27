@@ -14,7 +14,7 @@ type Source struct {
 
 	SourceId        int    `gorm:"primary_key" column:"source_id" json:"sourceId"`
 	UserId          int    `column:"user_id" json:"userId"`
-	Username        string `column:"user_name" json:"username"`
+	Username        string `column:"username" json:"username"`
 	UcatName        string `column:"ucat_name" json:"ucatName"`
 	Description     string `column:"description" json:"description"`
 	Link            string `column:"link" json:"link"`

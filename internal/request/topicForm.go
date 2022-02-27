@@ -4,5 +4,5 @@ package request
 type AddTopicForm struct {
 	WorksId    int    `form:"worksId" valid:"Required;Min(1)"`
 	Content    string `form:"content" valid:"Required"`
-	RelationId int    `form:"relationId"`
+	RelationId int    `form:"relationId" valid:"Min(0)"`
 }
