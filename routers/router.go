@@ -36,6 +36,9 @@ func InitRouter() *gin.Engine {
 	r.PUT("/auth/edit", middleware.JWT(), baseApi.UserApi.EditUser)
 	r.PUT("/auth/change-password", middleware.JWT(), baseApi.UserApi.ChangePassword)
 	r.GET("/refresh-token", middleware.JWT(), baseApi.UserApi.RefreshToken)
+	// 获取作品
+	r.GET("/api/works", baseApi.WorksApi.GetWorks)
+	r.GET("/api/works/:id", baseApi.WorksApi.GetOneWorks)
 
 	apiHandle := r.Group("/api")
 	apiHandle.Use(middleware.JWT())
@@ -46,8 +49,6 @@ func InitRouter() *gin.Engine {
 		apiHandle.PUT("/category/:id", baseApi.CategoryApi.EditCategory)
 		apiHandle.DELETE("/category/:id", baseApi.CategoryApi.DeleteCategory)
 		// 作品
-		apiHandle.GET("/works", baseApi.WorksApi.GetWorks)
-		apiHandle.GET("/works/:id", baseApi.WorksApi.GetOneWorks)
 		apiHandle.POST("/works", baseApi.WorksApi.AddWorks)
 		apiHandle.PUT("/works", baseApi.WorksApi.EditWorks)
 		apiHandle.DELETE("/works/:id", baseApi.WorksApi.DeleteWorks)
