@@ -1,7 +1,6 @@
 package api
 
 import (
-	"designer-api/internal/request"
 	"designer-api/internal/service"
 	"designer-api/pkg/app"
 	"designer-api/pkg/e"
@@ -48,20 +47,16 @@ func (api *FavoriteApi) GetFavorite(c *gin.Context) {
 
 // AddFavorite 添加关注
 func (api *FavoriteApi) AddFavorite(c *gin.Context) {
-	var (
-		form         request.AddFavoriteForm
-		favoriteData service.Favorite
-	)
-
-	httpCode, errCode, msg := app.BindAndValid(c, &form)
-	if errCode != e.SUCCESS {
-		app.Response(c, httpCode, errCode, nil, msg)
+	var favoriteData service.Favorite
+	worksId := c.Query("worksId")
+	if worksId == "" {
+		app.Response(c, http.StatusBadRequest, e.INVALID_PARAMS, nil, "")
 		return
 	}
 
 	// 获取用户信息
 	userId := (c.MustGet("userId")).(int)
-	favoriteData.WorksId = form.WorksId
+	favoriteData.WorksId = com.StrTo(worksId).MustInt()
 	favoriteData.UserId = userId
 
 	if err := api.favoriteService.Add(&favoriteData); err != nil {

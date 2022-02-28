@@ -3,6 +3,8 @@ AppName = designer
 AppHost = http://127.0.0.1:8000
 PageSize = 10
 JwtSecret = 58358$8696@5435
+SignKey = 78435YUI3275BK92@49357&6729GD
+Environment = production
 
 RuntimeRootPath = runtime/
 ImageSavePath = upload/images/

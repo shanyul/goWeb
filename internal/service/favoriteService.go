@@ -12,7 +12,9 @@ type Favorite struct {
 }
 
 func (service *FavoriteService) Add(favorite *Favorite) error {
-	if isFavorite := service.FavoriteModel.IsFavorite(favorite.UserId, favorite.WorksId); !isFavorite {
+	field := "favorite_num"
+	_ = service.WorksModel.Increment(favorite.WorksId, field)
+	/*if isFavorite := service.FavoriteModel.IsFavorite(favorite.UserId, favorite.WorksId); !isFavorite {
 
 		favoriteData := models.Favorite{}
 		favoriteData.UserId = favorite.UserId
@@ -24,7 +26,7 @@ func (service *FavoriteService) Add(favorite *Favorite) error {
 
 		field := "favorite_num"
 		_ = service.WorksModel.Increment(favorite.WorksId, field)
-	}
+	}*/
 
 	return nil
 }

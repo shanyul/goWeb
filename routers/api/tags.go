@@ -29,14 +29,19 @@ func (api *TagsApi) GetList(c *gin.Context) {
 		data.TagName = name
 	}
 
-	if isDelete := c.Query("deleteType"); isDelete != "" {
-		data.Delete = com.StrTo(isDelete).MustInt()
-	}
-
 	if tagId := c.Query("tagId"); tagId != "" {
 		data.TagId = com.StrTo(tagId).MustInt()
 	}
-	data.UserId = (c.MustGet("userId")).(int)
+
+	// 查询已登录的标签
+	userId := (c.MustGet("userId")).(int)
+	if userId > 0 {
+		data.UserId = userId
+	}
+	// 查询指定用户的标签
+	if qUserId := c.Query("userId"); qUserId != "" {
+		data.UserId = com.StrTo(qUserId).MustInt()
+	}
 
 	orderString := ""
 	if orderBy := c.Query("orderBy"); orderBy != "" {

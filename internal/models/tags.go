@@ -8,8 +8,6 @@ type TagsModel struct{}
 
 type Tags struct {
 	BaseModel
-	Works []WorksTag `gorm:"ForeignKey:tag_id" json:"works"`
-
 	TagId           int    `gorm:"primary_key" column:"tag_id" json:"tagId"`
 	TagName         string `column:"tag_name" json:"tagName"`
 	UserId          int    `column:"user_id" json:"userId"`
@@ -29,13 +27,11 @@ func (*TagsModel) GetTagList(orderBy string, maps interface{}) ([]Tags, error) {
 		tags []Tags
 		err  error
 	)
-
+	query := dbHandle.Select("tags.*, count(works_tag.tag_id) as count").Joins("left join works_tag on works_tag.tag_id = tags.tag_id").Where(maps).Group("tag_id")
 	if orderBy != "" {
-		err = dbHandle.Where(maps).Order(orderBy).Find(&tags).Error
-	} else {
-		err = dbHandle.Where(maps).Find(&tags).Error
+		query = query.Order(orderBy)
 	}
-
+	err = query.Find(&tags).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -45,7 +41,7 @@ func (*TagsModel) GetTagList(orderBy string, maps interface{}) ([]Tags, error) {
 
 func (*TagsModel) GetTag(id int) (Tags, error) {
 	var tag Tags
-	err := dbHandle.Preload("Works").Where("tag_id = ?", id).First(&tag).Error
+	err := dbHandle.Select("tags.*, count(works_tag.tag_id) as count").Joins("left join works_tag on works_tag.tag_id = tags.tag_id").Where("tags.tag_id = ?", id).Group("tag_id").First(&tag).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return tag, err
 	}

@@ -11,6 +11,8 @@ type App struct {
 	AppHost         string
 	PageSize        int
 	JwtSecret       string
+	SignKey         string
+	Environment     string
 	ImageSavePath   string
 	ImageMaxSize    int
 	ImageAllowExt   []string

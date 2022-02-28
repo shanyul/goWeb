@@ -37,11 +37,21 @@ func (service *TagService) Edit(tag *Tags) error {
 	if err := service.TagsModel.EditTag(tag.TagId, tag.UserId, &data); err != nil {
 		return err
 	}
+	_ = service.WorksTagModel.UpdateTag(tag.TagId, tag.TagName)
 
 	return nil
 }
 
 func (service *TagService) GetAll(tag *Tags) ([]models.Tags, error) {
+	tagList, err := service.TagsModel.GetTagList(tag.OrderBy, service.getMaps(tag))
+	if err != nil {
+		return nil, err
+	}
+
+	return tagList, nil
+}
+
+func (service *TagService) GetByTag(tag *Tags) ([]models.Tags, error) {
 	tagList, err := service.TagsModel.GetTagList(tag.OrderBy, service.getMaps(tag))
 	if err != nil {
 		return nil, err
@@ -79,18 +89,18 @@ func (service *TagService) Count(tag *Tags) (int64, error) {
 func (service *TagService) getMaps(tag *Tags) map[string]interface{} {
 	maps := make(map[string]interface{})
 	if tag.Delete > 0 {
-		maps["delete_timestamp"] = tag.Delete
+		maps["tags.delete_timestamp"] = tag.Delete
 	} else {
-		maps["delete_timestamp"] = 0
+		maps["tags.delete_timestamp"] = 0
 	}
 	if tag.TagId != 0 {
-		maps["tag_id"] = tag.TagId
+		maps["tags.tag_id"] = tag.TagId
 	}
 	if tag.UserId != 0 {
-		maps["user_id"] = tag.UserId
+		maps["tags.user_id"] = tag.UserId
 	}
 	if tag.TagName != "" {
-		maps["tag_name"] = tag.TagName
+		maps["tags.tag_name"] = tag.TagName
 	}
 
 	return maps

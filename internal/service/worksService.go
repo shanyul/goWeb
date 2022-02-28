@@ -3,7 +3,6 @@ package service
 import (
 	"designer-api/internal/models"
 	"encoding/json"
-	"fmt"
 	"github.com/unknwon/com"
 	"strconv"
 	"strings"
@@ -54,8 +53,6 @@ func (service *WorksService) Add(w *Works) error {
 	if w.TagName != "" {
 		nameMap = strings.Split(w.TagName, ",")
 	}
-	fmt.Println("idMap", idMap)
-	fmt.Println("idMap", nameMap)
 
 	for k, v := range idMap {
 		var tag models.WorksTag
@@ -114,7 +111,13 @@ func (service *WorksService) Edit(w *Works) error {
 }
 
 func (service *WorksService) GetAll(w *Works) ([]models.Works, error) {
-	data, err := service.WorksModel.GetWorks(w.PageNum, w.PageSize, service.getMaps(w), w.OrderBy)
+	maps := service.getMaps(w)
+	tagIdMap := service.getIdMap(w.TagId)
+	if len(tagIdMap) > 0 {
+		maps["tagIdMap"] = tagIdMap
+	}
+
+	data, err := service.WorksModel.GetWorks(w.PageNum, w.PageSize, maps, w.OrderBy)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +159,12 @@ func (service *WorksService) ExistByID(worksId int) (bool, error) {
 }
 
 func (service *WorksService) Count(works *Works) (int64, error) {
-	return service.WorksModel.GetWorksTotal(service.getMaps(works))
+	maps := service.getMaps(works)
+	tagIdMap := service.getIdMap(works.TagId)
+	if len(tagIdMap) > 0 {
+		maps["tagIdMap"] = tagIdMap
+	}
+	return service.WorksModel.GetWorksTotal(maps)
 }
 
 func (service *WorksService) Increment(worksId int, field string) error {
@@ -169,13 +177,16 @@ func (service *WorksService) Decrement(worksId int, field string) error {
 
 func (service *WorksService) getMaps(w *Works) map[string]interface{} {
 	maps := make(map[string]interface{})
-	maps["is_open"] = w.IsOpen
+	maps["works.is_open"] = w.IsOpen
 
 	if w.Username != "" {
-		maps["username"] = w.Username
+		maps["works.username"] = w.Username
+	}
+	if w.UserId != 0 {
+		maps["works.user_id"] = w.UserId
 	}
 	if w.WorksName != "" {
-		maps["works_name"] = w.WorksName
+		maps["works.works_name"] = w.WorksName
 	}
 	if w.Delete != 0 {
 		maps["delete_timestamp"] = w.Delete
@@ -184,4 +195,16 @@ func (service *WorksService) getMaps(w *Works) map[string]interface{} {
 	}
 
 	return maps
+}
+
+func (service *WorksService) getIdMap(tagId string) []int {
+	var tagIdMap []int
+	if tagId != "" {
+		idMap := strings.Split(tagId, ",")
+		for i := 0; i < len(idMap); i++ {
+			tagIdMap = append(tagIdMap, com.StrTo(idMap[i]).MustInt())
+		}
+	}
+
+	return tagIdMap
 }

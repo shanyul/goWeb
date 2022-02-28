@@ -133,6 +133,10 @@ func (api *UserApi) EditUser(c *gin.Context) {
 	userData.Profession = form.Profession
 	userData.Charge = form.Charge
 	userData.Introduction = form.Introduction
+	userData.WechatCode = form.WechatCode
+	userData.Sex = form.Sex
+	userData.Phone = form.Phone
+	userData.Email = form.Email
 
 	if userInfo.Username != form.Username {
 		if exist, _ := api.userService.ExistNickname(form.Username); exist {
@@ -151,8 +155,13 @@ func (api *UserApi) EditUser(c *gin.Context) {
 }
 
 func (api *UserApi) GetUserInfo(c *gin.Context) {
-	id := com.StrTo(c.Param("id")).MustInt()
-	userInfo := api.userService.GetUserInfo(id)
+	id := c.Param("id")
+	if id == "" {
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
+		return
+	}
+	userId := com.StrTo(id).MustInt()
+	userInfo := api.userService.GetUserInfo(userId)
 	app.Response(c, http.StatusOK, e.SUCCESS, userInfo, "")
 }
 

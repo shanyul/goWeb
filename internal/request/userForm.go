@@ -14,6 +14,10 @@ type EditUserForm struct {
 	Profession   string `form:"profession"`
 	Charge       string `form:"charge"`
 	Introduction string `form:"introduction"`
+	WechatCode   string `form:"wechatCode"`
+	Phone        string `form:"phone"`
+	Sex          int    `form:"sex"`
+	Email        string `form:"email"`
 }
 
 type LoginUserForm struct {

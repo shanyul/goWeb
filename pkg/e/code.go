@@ -39,6 +39,8 @@ const (
 	ERROR_CONFIRM_PASSWORD_NOT_EQ  = 20007
 	ERROR_REGISTER_FAIL            = 20008
 	ERROR_GENERATE_PASSWORD        = 20009
+	ERROR_AUTH_CHECK_SIGN_FAIL     = 20010
+	ERROR_AUTH_CHECK_SIGN_EXPIRE   = 20011
 
 	ERROR_UPLOAD_SAVE_IMAGE_FAIL    = 30001
 	ERROR_UPLOAD_CHECK_IMAGE_FAIL   = 30002
@@ -66,6 +68,8 @@ var MsgFlags = map[int]string{
 	ERROR_DELETE_FAIL:               "删除失败",
 	ERROR_EXIST_WORKS:               "该作品已存在",
 	ERROR_AUTH_CHECK_TOKEN_FAIL:     "Token鉴权失败",
+	ERROR_AUTH_CHECK_SIGN_FAIL:      "签名验证失败",
+	ERROR_AUTH_CHECK_SIGN_EXPIRE:    "签名验已过期",
 	ERROR_AUTH_CHECK_TOKEN_TIMEOUT:  "Token已超时",
 	ERROR_AUTH_TOKEN:                "Token生成失败",
 	ERROR_AUTH:                      "Token错误",

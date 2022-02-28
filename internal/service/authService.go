@@ -134,6 +134,10 @@ func (service *UserService) Edit(u User) error {
 	user.BgImage = u.BgImage
 	user.Province = u.Province
 	user.City = u.City
+	user.Phone = u.Phone
+	user.Sex = u.Sex
+	user.Email = u.Email
+	user.WechatCode = u.WechatCode
 	user.Distinct = u.Distinct
 	user.Address = u.Address
 	user.Remark = u.Remark
@@ -213,16 +217,6 @@ func (service *UserService) WebScanLogin(userinfo wechat.UserInfoResponseForm) (
 		authInfo.Avatar = userinfo.Avatar
 		authInfo.City = userinfo.City
 		authInfo.UserId = service.UserModel.AddWechatUser(&authInfo)
-	} else {
-		authInfo.WechatOpenid = userinfo.OpenId
-		authInfo.UnionId = userinfo.UnionId
-		authInfo.Nickname = userinfo.Nickname
-		authInfo.Sex = userinfo.Sex
-		authInfo.Country = userinfo.Country
-		authInfo.Province = userinfo.Province
-		authInfo.Avatar = userinfo.Avatar
-		authInfo.City = userinfo.City
-		_ = service.UserModel.EditUser(authInfo.UserId, authInfo)
 	}
 
 	if authInfo.UserId == 0 {

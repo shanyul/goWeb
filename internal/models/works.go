@@ -37,11 +37,17 @@ func (Works) TableName() string {
 func (*WorksModel) GetWorks(pageNum int, pageSize int, maps map[string]interface{}, orderBy string) ([]Works, error) {
 	var works []Works
 	var err error
-	query := dbHandle.Preload("Tags")
+	query := dbHandle.Preload("Tags").Select("works.*")
 	if maps["delete_timestamp"] == 1 {
 		delete(maps, "delete_timestamp")
-		query = query.Where("delete_timestamp > ?", 100)
+		query = query.Where("works.delete_timestamp > ?", 100)
 	}
+
+	if idMap, ok := maps["tagIdMap"]; ok {
+		delete(maps, "tagIdMap")
+		query = query.Joins("right join works_tag on works_tag.works_id = works.works_id AND works_tag.tag_id IN ?", idMap)
+	}
+
 	query = query.Where(maps)
 	if orderBy != "" {
 		query = query.Order(orderBy)
@@ -68,12 +74,16 @@ func (*WorksModel) GetOneWorks(id int) (Works, error) {
 func (*WorksModel) GetWorksTotal(maps map[string]interface{}) (int64, error) {
 	var count int64
 	var err error
+	query := dbHandle.Model(&Works{})
 	if maps["delete_timestamp"] == 1 {
 		delete(maps, "delete_timestamp")
-		err = dbHandle.Model(&Works{}).Where("delete_timestamp > ?", 100).Where(maps).Count(&count).Error
-	} else {
-		err = dbHandle.Model(&Works{}).Where(maps).Count(&count).Error
+		query = query.Where("works.delete_timestamp > ?", 100)
 	}
+	if tagIdMap, ok := maps["tagIdMap"]; ok {
+		delete(maps, "tagIdMap")
+		query = query.Joins("right join works_tag on works_tag.works_id = works.works_id AND works_tag.tag_id IN ?", tagIdMap)
+	}
+	err = query.Where(maps).Count(&count).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return 0, err
 	}

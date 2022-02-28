@@ -7,7 +7,7 @@ CREATE TABLE `tags` (
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `delete_timestamp` int(11) NOT NULL DEFAULT '0',
-    PRIMARY KEY (`tag_id`),
+    PRIMARY KEY (`tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 

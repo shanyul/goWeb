@@ -26,13 +26,22 @@ func (*WorksTagModel) GetList(pageNum int, pageSize int, maps interface{}) ([]Wo
 		worksTag []WorksTag
 		err      error
 	)
-	err = dbHandle.Preload("Tags").Preload("Works").Where(maps).Limit(pageSize).Offset(pageNum).Find(&worksTag).Error
+	err = dbHandle.Where(maps).Limit(pageSize).Offset(pageNum).Find(&worksTag).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 
 	return worksTag, nil
+}
+
+func (*WorksTagModel) GetWorkIdByTagId(pageNum int, pageSize int, id []int) (worksTag []WorksTag, err error) {
+	err = dbHandle.Select("works_id").Where("tag_id IN ?", id).Limit(pageSize).Offset(pageNum).Find(&worksTag).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return
+	}
+
+	return
 }
 
 // 通过名称判断是否存在
@@ -64,6 +73,14 @@ func (*WorksTagModel) Delete(worksId int) error {
 
 func (*WorksTagModel) DeleteByTag(tagId int) error {
 	if err := dbHandle.Where("tag_id = ?", tagId).Delete(&WorksTag{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (*WorksTagModel) UpdateTag(tagId int, tagName string) error {
+	if err := dbHandle.Model(&WorksTag{}).Where("tag_id = ?", tagId).Update("tag_name", tagName).Error; err != nil {
 		return err
 	}
 

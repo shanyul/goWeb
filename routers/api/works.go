@@ -7,11 +7,10 @@ import (
 	"designer-api/pkg/e"
 	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
-	"net/http"
-
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
+	"net/http"
 )
 
 type WorksApi struct {
@@ -21,10 +20,11 @@ type WorksApi struct {
 }
 
 var orderMap = map[string]string{
-	"new":      "works_id desc",
-	"favorite": "favorite_num desc",
-	"topic":    "topic_num desc",
-	"view":     "view_num desc",
+	"new":      "works.works_id desc",
+	"favorite": "works.favorite_num desc",
+	"topic":    "works.topic_num desc",
+	"view":     "works.view_num desc",
+	"hot":      "works.view_num desc, works.favorite_num desc",
 }
 
 //获取多个作品
@@ -36,9 +36,14 @@ func (api *WorksApi) GetWorks(c *gin.Context) {
 	if name := c.Query("name"); name != "" {
 		worksData.WorksName = name
 	}
-
+	if tagId := c.Query("tagId"); tagId != "" {
+		worksData.TagId = tagId
+	}
 	if designer := c.Query("designer"); designer != "" {
 		worksData.Username = designer
+	}
+	if designerId := c.Query("designerId"); designerId != "" {
+		worksData.UserId = com.StrTo(designerId).MustInt()
 	}
 	if isDelete := c.Query("delete"); isDelete != "" {
 		worksData.Delete = com.StrTo(isDelete).MustInt()

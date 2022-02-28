@@ -22,6 +22,7 @@ type User struct {
 	Distinct        string `column:"distinct" json:"distinct"`
 	Address         string `column:"address" json:"address"`
 	Remark          string `column:"remark" json:"remark"`
+	WechatCode      string `column:"wechat_code" json:"wechatCode"`
 	WechatOpenid    string `column:"wechat_openid" json:"wechatOpenid"`
 	UnionId         string `column:"union_id" json:"unionId"`
 	SessionKey      string `column:"session_key" json:"sessionKey"`
