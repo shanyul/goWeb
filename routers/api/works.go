@@ -42,6 +42,10 @@ func (api *WorksApi) GetWorks(c *gin.Context) {
 	if designer := c.Query("designer"); designer != "" {
 		worksData.Username = designer
 	}
+	id := (c.MustGet("userId")).(int)
+	if id > 0 {
+		worksData.UserId = id
+	}
 	if designerId := c.Query("designerId"); designerId != "" {
 		worksData.UserId = com.StrTo(designerId).MustInt()
 	}
