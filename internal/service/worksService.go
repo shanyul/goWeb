@@ -3,6 +3,7 @@ package service
 import (
 	"designer-api/internal/models"
 	"encoding/json"
+	"errors"
 	"github.com/unknwon/com"
 	"strconv"
 	"strings"
@@ -49,9 +50,9 @@ func (service *WorksService) Add(w *Works) error {
 
 	var tagMap []models.WorksTag
 	var nameMap []string
-	idMap := strings.Split(w.TagId, ",")
+	idMap := strings.Split(w.TagId, "_")
 	if w.TagName != "" {
-		nameMap = strings.Split(w.TagName, ",")
+		nameMap = strings.Split(w.TagName, "_")
 	}
 
 	for k, v := range idMap {
@@ -91,9 +92,9 @@ func (service *WorksService) Edit(w *Works) error {
 
 	var tagMap []models.WorksTag
 	var nameMap []string
-	idMap := strings.Split(w.TagId, ",")
+	idMap := strings.Split(w.TagId, "_")
 	if w.TagName != "" {
-		nameMap = strings.Split(w.TagName, ",")
+		nameMap = strings.Split(w.TagName, "_")
 	}
 
 	for k, v := range idMap {
@@ -108,6 +109,25 @@ func (service *WorksService) Edit(w *Works) error {
 		tagMap = append(tagMap, tag)
 	}
 	_ = service.WorksTagModel.BatchAdd(tagMap)
+
+	return nil
+}
+
+func (service *WorksService) Recover(id int, userId int) error {
+	works, err := service.WorksModel.GetOneWorks(id)
+	if err != nil {
+		return err
+	}
+
+	if works.UserId != userId || works.DeleteTimestamp < 100 {
+		return errors.New("当前状态无法修改")
+	}
+
+	worksData := models.Works{}
+	worksData.DeleteTimestamp = 0
+	if err = service.WorksModel.EditWorks(id, worksData); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -202,7 +222,7 @@ func (service *WorksService) getMaps(w *Works) map[string]interface{} {
 func (service *WorksService) getIdMap(tagId string) []int {
 	var tagIdMap []int
 	if tagId != "" {
-		idMap := strings.Split(tagId, ",")
+		idMap := strings.Split(tagId, "_")
 		for i := 0; i < len(idMap); i++ {
 			tagIdMap = append(tagIdMap, com.StrTo(idMap[i]).MustInt())
 		}

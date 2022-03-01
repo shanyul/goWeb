@@ -57,6 +57,7 @@ func InitRouter() *gin.Engine {
 		// 作品
 		apiHandle.POST("/works", middleware.JWT(), baseApi.WorksApi.AddWorks)
 		apiHandle.PUT("/works", middleware.JWT(), baseApi.WorksApi.EditWorks)
+		apiHandle.PUT("/works/recover/:id", middleware.JWT(), baseApi.WorksApi.Recover)
 		apiHandle.DELETE("/works/:id", middleware.JWT(), baseApi.WorksApi.DeleteWorks)
 		apiHandle.DELETE("/works/true/:id", middleware.JWT(), baseApi.WorksApi.Delete)
 		// 评论

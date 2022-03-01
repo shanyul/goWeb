@@ -258,3 +258,24 @@ func (api *WorksApi) Delete(c *gin.Context) {
 
 	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
 }
+
+func (api *WorksApi) Recover(c *gin.Context) {
+	valid := validation.Validation{}
+	id := com.StrTo(c.Param("id")).MustInt()
+	valid.Min(id, 1, "id").Message("ID必须大于0")
+
+	if valid.HasErrors() {
+		app.MarkErrors(valid.Errors)
+		app.Response(c, http.StatusOK, e.INVALID_PARAMS, nil, "")
+		return
+	}
+	// 获取用户信息
+	userId := (c.MustGet("userId")).(int)
+	err := api.worksService.Recover(id, userId)
+	if err != nil {
+		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_WORKS_FAIL, nil, "")
+		return
+	}
+
+	app.Response(c, http.StatusOK, e.SUCCESS, nil, "")
+}
