@@ -5,7 +5,6 @@ import (
 	"designer-api/pkg/e"
 	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 	"net/http"
