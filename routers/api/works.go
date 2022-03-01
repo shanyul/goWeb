@@ -250,17 +250,7 @@ func (api *WorksApi) Delete(c *gin.Context) {
 	}
 	// 获取用户信息
 	userId := (c.MustGet("userId")).(int)
-	exists, err := api.worksService.ExistByID(id)
-	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_CHECK_EXIST_WORKS_FAIL, nil, "")
-		return
-	}
-	if !exists {
-		app.Response(c, http.StatusOK, e.ERROR_NOT_EXIST_WORKS, nil, "")
-		return
-	}
-
-	err = api.worksService.TrueDelete(id, userId)
+	err := api.worksService.TrueDelete(id, userId)
 	if err != nil {
 		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_WORKS_FAIL, nil, "")
 		return
