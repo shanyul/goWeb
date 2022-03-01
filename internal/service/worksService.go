@@ -57,7 +57,8 @@ func (service *WorksService) Add(w *Works) error {
 	for k, v := range idMap {
 		var tag models.WorksTag
 		tag.TagId = com.StrTo(v).MustInt()
-		if nameMap[k] != "" {
+		tag.TagName = ""
+		if len(nameMap)-k > 0 && nameMap[k] != "" {
 			tag.TagName = nameMap[k]
 		}
 		tag.WorksId = worksId
@@ -98,7 +99,8 @@ func (service *WorksService) Edit(w *Works) error {
 	for k, v := range idMap {
 		var tag models.WorksTag
 		tag.TagId, _ = strconv.Atoi(v)
-		if nameMap[k] != "" {
+		tag.TagName = ""
+		if len(nameMap)-k > 0 && nameMap[k] != "" {
 			tag.TagName = nameMap[k]
 		}
 		tag.WorksId = w.WorksId

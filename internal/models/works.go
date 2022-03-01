@@ -119,7 +119,7 @@ func (*WorksModel) ExistWorksByName(name string) (bool, error) {
 
 func (*WorksModel) ExistWorksById(id int) (bool, error) {
 	var works Works
-	err := dbHandle.Select("works_id").Where("works_id = ?", id).First(&works).Error
+	err := dbHandle.Select("works_id").Where("works_id = ? AND delete_timestamp = 0", id).First(&works).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false, err
 	}

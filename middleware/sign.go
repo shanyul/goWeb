@@ -59,8 +59,18 @@ func Sign() gin.HandlerFunc {
 			}
 		}
 
+		userId := 0
+		// 判断是否登录
+		token := c.GetHeader("token")
+		if token != "" {
+			claims, err := util.ParseToken(token)
+			if err == nil {
+				userId = claims.UsesId
+			}
+		}
+
 		// 设置默认值
-		c.Set("userId", 0)
+		c.Set("userId", userId)
 
 		c.Next()
 	}
