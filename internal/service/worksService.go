@@ -197,8 +197,9 @@ func (service *WorksService) Decrement(worksId int, field string) error {
 
 func (service *WorksService) getMaps(w *Works) map[string]interface{} {
 	maps := make(map[string]interface{})
-	maps["works.is_open"] = w.IsOpen
-
+	if w.IsOpen != -1 {
+		maps["works.is_open"] = w.IsOpen
+	}
 	if w.Username != "" {
 		maps["works.username"] = w.Username
 	}

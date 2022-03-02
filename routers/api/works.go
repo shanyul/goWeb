@@ -45,17 +45,18 @@ func (api *WorksApi) GetWorks(c *gin.Context) {
 	id := (c.MustGet("userId")).(int)
 	if id > 0 {
 		worksData.UserId = id
+		worksData.IsOpen = -1
+		if isOpen := c.Query("isOpen"); isOpen != "" {
+			worksData.IsOpen = com.StrTo(isOpen).MustInt()
+		}
+	} else {
+		worksData.IsOpen = 1
 	}
 	if designerId := c.Query("designerId"); designerId != "" {
 		worksData.UserId = com.StrTo(designerId).MustInt()
 	}
 	if isDelete := c.Query("delete"); isDelete != "" {
 		worksData.Delete = com.StrTo(isDelete).MustInt()
-	}
-	if isOpen := c.Query("isOpen"); isOpen != "" {
-		worksData.IsOpen = com.StrTo(isOpen).MustInt()
-	} else {
-		worksData.IsOpen = 1
 	}
 	orderString = ""
 	if orderBy := c.Query("orderBy"); orderBy != "" {

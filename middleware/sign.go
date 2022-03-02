@@ -3,6 +3,7 @@ package middleware
 import (
 	"designer-api/pkg/app"
 	"designer-api/pkg/e"
+	"designer-api/pkg/logging"
 	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -45,6 +46,7 @@ func Sign() gin.HandlerFunc {
 			signString += setting.AppSetting.SignKey
 			checkSign := util.EncodeMD5(signString)
 			if strings.Compare(checkSign, reqSign) != 0 {
+				logging.Error("checkSignError:", checkSign)
 				app.Response(c, http.StatusBadRequest, e.ERROR_AUTH_CHECK_SIGN_FAIL, nil, "")
 				c.Abort()
 				return
