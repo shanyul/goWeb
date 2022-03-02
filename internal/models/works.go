@@ -159,7 +159,17 @@ func (*WorksModel) Delete(id int, userId int) error {
 }
 
 func (*WorksModel) EditWorks(id int, works Works) error {
-	if err := dbHandle.Model(&Works{}).Where("works_id = ?", id).Updates(works).Error; err != nil {
+	if err := dbHandle.Model(&works).Select(
+		"works_name", "state", "is_open", "works_link", "works_type", "works_description", "remark",
+	).Where("works_id = ?", id).Updates(works).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (*WorksModel) Recover(id int, delete int) error {
+	if err := dbHandle.Model(&Works{}).Where("works_id = ?", id).Update("delete_timestamp", delete).Error; err != nil {
 		return err
 	}
 

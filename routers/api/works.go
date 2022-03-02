@@ -165,10 +165,7 @@ func (api *WorksApi) AddWorks(c *gin.Context) {
 
 // 修改文章作品
 func (api *WorksApi) EditWorks(c *gin.Context) {
-	var (
-		form request.EditWorksForm
-	)
-
+	var form request.EditWorksForm
 	httpCode, errCode, msg := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		app.Response(c, httpCode, errCode, nil, msg)
@@ -198,7 +195,10 @@ func (api *WorksApi) EditWorks(c *gin.Context) {
 		return
 	}
 
-	if err := api.worksService.Edit(&worksData); err != nil {
+	// 用户ID
+	userId := (c.MustGet("userId")).(int)
+
+	if err := api.worksService.Edit(userId, &worksData); err != nil {
 		app.Response(c, http.StatusInternalServerError, e.ERROR_ADD_WORKS_FAIL, nil, "")
 		return
 	}
@@ -273,7 +273,7 @@ func (api *WorksApi) Recover(c *gin.Context) {
 	userId := (c.MustGet("userId")).(int)
 	err := api.worksService.Recover(id, userId)
 	if err != nil {
-		app.Response(c, http.StatusInternalServerError, e.ERROR_DELETE_WORKS_FAIL, nil, "")
+		app.Response(c, http.StatusInternalServerError, e.ERROR_EDIT_FAIL, nil, "")
 		return
 	}
 

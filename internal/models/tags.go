@@ -27,7 +27,7 @@ func (*TagsModel) GetTagList(orderBy string, maps interface{}) ([]Tags, error) {
 		tags []Tags
 		err  error
 	)
-	query := dbHandle.Select("tags.*, count(works_tag.tag_id) as count").Joins("left join works_tag on works_tag.tag_id = tags.tag_id").Where(maps).Group("tag_id")
+	query := dbHandle.Select("tags.*, count(works_tag.tag_id) as count").Joins("left join works_tag on works_tag.tag_id = tags.tag_id AND works_tag.is_delete = 0").Where(maps).Group("tag_id")
 	if orderBy != "" {
 		query = query.Order(orderBy)
 	}
@@ -41,7 +41,7 @@ func (*TagsModel) GetTagList(orderBy string, maps interface{}) ([]Tags, error) {
 
 func (*TagsModel) GetTag(id int) (Tags, error) {
 	var tag Tags
-	err := dbHandle.Select("tags.*, count(works_tag.tag_id) as count").Joins("left join works_tag on works_tag.tag_id = tags.tag_id").Where("tags.tag_id = ?", id).Group("tag_id").First(&tag).Error
+	err := dbHandle.Select("tags.*, count(works_tag.tag_id) as count").Joins("left join works_tag on works_tag.tag_id = tags.tag_id AND works_tag.is_delete = 0").Where("tags.tag_id = ?", id).Group("tag_id").First(&tag).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return tag, err
 	}
@@ -58,6 +58,16 @@ func (*TagsModel) IsExist(name string, userId int) (bool, error) {
 	}
 
 	return tag.TagId > 0, nil
+}
+
+func (*TagsModel) Get(tagId int) (Tags, error) {
+	var tag Tags
+	err := dbHandle.Where("tag_id = ?", tagId).First(&tag).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return tag, err
+	}
+
+	return tag, nil
 }
 
 func (*TagsModel) AddTag(tag *Tags) error {

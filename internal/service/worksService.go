@@ -12,6 +12,7 @@ import (
 type WorksService struct {
 	WorksModel    models.WorksModel
 	WorksTagModel models.WorksTagModel
+	TagsModel     models.TagsModel
 	FavoriteModel models.FavoriteModel
 }
 
@@ -49,19 +50,12 @@ func (service *WorksService) Add(w *Works) error {
 	}
 
 	var tagMap []models.WorksTag
-	var nameMap []string
 	idMap := strings.Split(w.TagId, "_")
-	if w.TagName != "" {
-		nameMap = strings.Split(w.TagName, "_")
-	}
-
-	for k, v := range idMap {
+	for _, v := range idMap {
 		var tag models.WorksTag
 		tag.TagId = com.StrTo(v).MustInt()
-		tag.TagName = ""
-		if len(nameMap)-k > 0 && nameMap[k] != "" {
-			tag.TagName = nameMap[k]
-		}
+		tagData, _ := service.TagsModel.Get(tag.TagId)
+		tag.TagName = tagData.TagName
 		tag.WorksId = worksId
 		tag.WorksName = w.WorksName
 		tagMap = append(tagMap, tag)
@@ -71,8 +65,14 @@ func (service *WorksService) Add(w *Works) error {
 	return nil
 }
 
-func (service *WorksService) Edit(w *Works) error {
-
+func (service *WorksService) Edit(userId int, w *Works) error {
+	works, err := service.WorksModel.GetOneWorks(w.WorksId)
+	if err != nil {
+		return err
+	}
+	if works.DeleteTimestamp != 0 || works.UserId != userId {
+		return errors.New("当前状态您无法修改")
+	}
 	worksData := models.Works{}
 	worksData.WorksName = w.WorksName
 	worksData.State = w.State
@@ -82,28 +82,21 @@ func (service *WorksService) Edit(w *Works) error {
 	worksData.WorksDescription = w.WorksDescription
 	worksData.Remark = w.Remark
 
-	if err := service.WorksModel.EditWorks(w.WorksId, worksData); err != nil {
+	if err = service.WorksModel.EditWorks(w.WorksId, worksData); err != nil {
 		return err
 	}
 
-	if err := service.WorksTagModel.Delete(w.WorksId); err != nil {
+	if err = service.WorksTagModel.Delete(w.WorksId); err != nil {
 		return err
 	}
 
 	var tagMap []models.WorksTag
-	var nameMap []string
 	idMap := strings.Split(w.TagId, "_")
-	if w.TagName != "" {
-		nameMap = strings.Split(w.TagName, "_")
-	}
-
-	for k, v := range idMap {
+	for _, v := range idMap {
 		var tag models.WorksTag
 		tag.TagId, _ = strconv.Atoi(v)
-		tag.TagName = ""
-		if len(nameMap)-k > 0 && nameMap[k] != "" {
-			tag.TagName = nameMap[k]
-		}
+		tagData, _ := service.TagsModel.Get(tag.TagId)
+		tag.TagName = tagData.TagName
 		tag.WorksId = w.WorksId
 		tag.WorksName = w.WorksName
 		tagMap = append(tagMap, tag)
@@ -120,14 +113,14 @@ func (service *WorksService) Recover(id int, userId int) error {
 	}
 
 	if works.UserId != userId || works.DeleteTimestamp < 100 {
-		return errors.New("当前状态无法修改")
+		return errors.New("当前状态无法恢复")
 	}
 
-	worksData := models.Works{}
-	worksData.DeleteTimestamp = 0
-	if err = service.WorksModel.EditWorks(id, worksData); err != nil {
+	deleteTimestamp := 0
+	if err = service.WorksModel.Recover(id, deleteTimestamp); err != nil {
 		return err
 	}
+	_ = service.WorksTagModel.SoftDelete(id, 0)
 
 	return nil
 }
@@ -169,7 +162,12 @@ func (service *WorksService) Get(worksId int, userId int) (map[string]interface{
 }
 
 func (service *WorksService) Delete(worksId int, userId int) error {
-	return service.WorksModel.DeleteWorks(worksId, userId)
+	err := service.WorksModel.DeleteWorks(worksId, userId)
+	if err != nil {
+		return err
+	}
+	_ = service.WorksTagModel.SoftDelete(worksId, 1)
+	return nil
 }
 
 func (service *WorksService) TrueDelete(worksId int, userId int) error {

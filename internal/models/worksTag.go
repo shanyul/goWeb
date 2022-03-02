@@ -11,6 +11,7 @@ type WorksTag struct {
 	WorksId   int    `gorm:"primaryKey" column:"works_id" json:"worksId"`
 	TagName   string `column:"tag_name" json:"tagName"`
 	WorksName string `column:"works_name" json:"worksName"`
+	IsDelete  int    `column:"is_delete" json:"isDelete"`
 
 	//Tags  Tags  `gorm:"foreignKey:tag_id" json:"tags"`
 }
@@ -65,6 +66,14 @@ func (*WorksTagModel) BatchAdd(worksTag []WorksTag) error {
 
 func (*WorksTagModel) Delete(worksId int) error {
 	if err := dbHandle.Where("works_id = ?", worksId).Delete(&WorksTag{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (*WorksTagModel) SoftDelete(worksId int, deleteType int) error {
+	if err := dbHandle.Model(&WorksTag{}).Where("works_id = ?", worksId).Update("is_delete", deleteType).Error; err != nil {
 		return err
 	}
 
