@@ -55,12 +55,16 @@ func (service *WorksService) Add(w *Works) error {
 		var tag models.WorksTag
 		tag.TagId = com.StrTo(v).MustInt()
 		tagData, _ := service.TagsModel.Get(tag.TagId)
-		tag.TagName = tagData.TagName
-		tag.WorksId = worksId
-		tag.WorksName = w.WorksName
-		tagMap = append(tagMap, tag)
+		if tagData.TagId > 0 {
+			tag.TagName = tagData.TagName
+			tag.WorksId = worksId
+			tag.WorksName = w.WorksName
+			tagMap = append(tagMap, tag)
+		}
 	}
-	_ = service.WorksTagModel.BatchAdd(tagMap)
+	if len(tagMap) > 0 {
+		_ = service.WorksTagModel.BatchAdd(tagMap)
+	}
 
 	return nil
 }
@@ -96,12 +100,16 @@ func (service *WorksService) Edit(userId int, w *Works) error {
 		var tag models.WorksTag
 		tag.TagId, _ = strconv.Atoi(v)
 		tagData, _ := service.TagsModel.Get(tag.TagId)
-		tag.TagName = tagData.TagName
-		tag.WorksId = w.WorksId
-		tag.WorksName = w.WorksName
-		tagMap = append(tagMap, tag)
+		if tagData.TagId > 0 {
+			tag.TagName = tagData.TagName
+			tag.WorksId = w.WorksId
+			tag.WorksName = w.WorksName
+			tagMap = append(tagMap, tag)
+		}
 	}
-	_ = service.WorksTagModel.BatchAdd(tagMap)
+	if len(tagMap) > 0 {
+		_ = service.WorksTagModel.BatchAdd(tagMap)
+	}
 
 	return nil
 }

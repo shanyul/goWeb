@@ -5,11 +5,11 @@ import (
 	"designer-api/internal/service"
 	"designer-api/pkg/app"
 	"designer-api/pkg/e"
-	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
+	"math"
 	"net/http"
 )
 
@@ -17,6 +17,7 @@ type WorksApi struct {
 	worksService service.WorksService
 	viewService  service.ViewService
 	userService  service.UserService
+	pagination   util.PageTool
 }
 
 var orderMap = map[string]string{
@@ -72,9 +73,13 @@ func (api *WorksApi) GetWorks(c *gin.Context) {
 		return
 	}
 
+	pagination := api.pagination.GetPage(c)
 	worksData.OrderBy = orderString
-	worksData.PageNum = util.GetPage(c)
-	worksData.PageSize = setting.AppSetting.PageSize
+	worksData.PageNum = pagination.Start
+	worksData.PageSize = pagination.PageSize
+	// 分页信息
+	pagination.Total = int(total)
+	pagination.TotalPage = int(math.Ceil(float64(pagination.Total) / float64(pagination.PageSize)))
 
 	works, err := api.worksService.GetAll(&worksData)
 	if err != nil {
@@ -84,7 +89,7 @@ func (api *WorksApi) GetWorks(c *gin.Context) {
 
 	data := make(map[string]interface{})
 	data["lists"] = works
-	data["total"] = total
+	data["pagination"] = pagination
 
 	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }

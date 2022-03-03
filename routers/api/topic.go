@@ -5,8 +5,8 @@ import (
 	"designer-api/internal/service"
 	"designer-api/pkg/app"
 	"designer-api/pkg/e"
-	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
+	"math"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
@@ -17,6 +17,7 @@ import (
 type TopicApi struct {
 	topicService service.TopicService
 	userService  service.UserService
+	pagination   util.PageTool
 }
 
 // 获取多个评论
@@ -35,18 +36,22 @@ func (api *TopicApi) GetTopics(c *gin.Context) {
 		app.Response(c, http.StatusInternalServerError, e.ERROR_COUNT_WORKS_FAIL, nil, "")
 		return
 	}
-	topicData.PageNum = util.GetPage(c)
-	topicData.PageSize = setting.AppSetting.PageSize
+	pagination := api.pagination.GetPage(c)
+	topicData.PageNum = pagination.Start
+	topicData.PageSize = pagination.PageSize
 
 	topic, err := api.topicService.GetAll(&topicData)
 	if err != nil {
 		app.Response(c, http.StatusInternalServerError, e.ERROR_GET_FAIL, nil, "")
 		return
 	}
+	// 分页信息
+	pagination.Total = int(total)
+	pagination.TotalPage = int(math.Ceil(float64(pagination.Total) / float64(pagination.PageSize)))
 
 	data := make(map[string]interface{})
 	data["lists"] = topic
-	data["total"] = total
+	data["pagination"] = pagination
 
 	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }

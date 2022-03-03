@@ -5,8 +5,8 @@ import (
 	"designer-api/internal/service"
 	"designer-api/pkg/app"
 	"designer-api/pkg/e"
-	"designer-api/pkg/setting"
 	"designer-api/pkg/util"
+	"math"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
@@ -16,6 +16,7 @@ import (
 
 type CategoryApi struct {
 	categoryService service.CategoryService
+	pagination      util.PageTool
 }
 
 //获取多个作品
@@ -35,11 +36,13 @@ func (api *CategoryApi) GetCategory(c *gin.Context) {
 		return
 	}
 
+	pagination := api.pagination.GetPage(c)
+
 	categoryData := service.Category{}
 	categoryData.CatName = name
 	categoryData.ParentId = parentId
-	categoryData.PageNum = util.GetPage(c)
-	categoryData.PageSize = setting.AppSetting.PageSize
+	categoryData.PageNum = pagination.Start
+	categoryData.PageSize = pagination.PageSize
 
 	total, err := api.categoryService.Count(&categoryData)
 	if err != nil {
@@ -53,9 +56,13 @@ func (api *CategoryApi) GetCategory(c *gin.Context) {
 		return
 	}
 
+	// 分页信息
+	pagination.Total = int(total)
+	pagination.TotalPage = int(math.Ceil(float64(pagination.Total) / float64(pagination.PageSize)))
+
 	data := make(map[string]interface{})
 	data["lists"] = category
-	data["total"] = total
+	data["pagination"] = pagination
 
 	app.Response(c, http.StatusOK, e.SUCCESS, data, "")
 }
